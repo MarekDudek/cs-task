@@ -2,8 +2,8 @@ Requirements
 ============
 
 1. No analysis is performed on **any** of conditions:
-  1. When date is different that current
-  2. When user is whitelisted
+  1. Date is different that current
+  2. User is whitelisted
   
   *Other conditions may be specified at a later time.*
   
@@ -17,4 +17,7 @@ Requirements
   2. Number of transactions **from** the same account exceeds configured threshold
   3. Number of transactions by the same user **and** their sum total **both** exceed **any** of configured thresholds
   
+  Every condition pertains to particular day which follows from skipping analysis of transaction on days other than current (1.1.).
+  
   *Conditions may be changed*
+  
