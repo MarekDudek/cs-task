@@ -22,7 +22,7 @@ public class TransactionBuilderTest {
     private static final BigDecimal AMOUNT = new BigDecimal(55555);
 
     @Test
-    public void date_is_properly_built()
+    public void transaction_is_properly_built()
     {
 	// when
 	final Transaction transaction = transaction()
