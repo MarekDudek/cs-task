@@ -14,9 +14,10 @@ public class FraudAnalyser {
 
     /**
      * @param list
-     *            off transactions to be checked
+     *            of transactions to be checked
      * @param date
-     *            - analyse only transactions from the given day
+     *            - analyze only transactions from the given day
+     * 
      * @return list off suspicious transactions
      */
     public Iterator<Transaction> analyse(final Iterator<Transaction> transactions, final Date date)

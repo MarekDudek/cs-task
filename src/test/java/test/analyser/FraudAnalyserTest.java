@@ -8,6 +8,7 @@ import static solution.TestRequirements.BLACKLISTED_USER_3_TRANSACTION;
 import static solution.TestRequirements.WHITELISTED_USER_1_TRANSACTION;
 import static solution.TestRequirements.WHITELISTED_USER_2_TRANSACTION;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -34,7 +35,7 @@ public class FraudAnalyserTest {
     public void test()
     {
 	// when
-	final Iterator<Transaction> suspictious = analyser.analyse(null, null);
+	final Iterator<Transaction> suspictious = analyser.analyse(Collections.emptyIterator(), null);
 
 	// then
 	assertThat(suspictious, notNullValue());
@@ -54,6 +55,10 @@ public class FraudAnalyserTest {
 		);
 
 	// when
-	analyser.analyse(transactions.iterator(), new Date());
+	final Iterator<Transaction> iterator = analyser.analyse(transactions.iterator(), new Date());
+
+	while (iterator.hasNext()) {
+	    System.out.println(iterator.next());
+	}
     }
 }
