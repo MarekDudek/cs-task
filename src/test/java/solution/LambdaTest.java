@@ -1,15 +1,18 @@
 package solution;
 
+import static java.util.Calendar.DAY_OF_MONTH;
+import static java.util.Calendar.MONTH;
+import static java.util.Calendar.YEAR;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
-import static solution.TestRequirements.WHITELISTED_USER_1;
+import static solution.TestRequirements.BLACKLISTED_USER_1;
+import static solution.TestRequirements.WHITELISTED_USERS;
 import static solution.TestRequirements.WHITELISTED_USER_1_TRANSACTION;
-import static solution.TestRequirements.WHITELISTED_USER_2;
 import static solution.TransactionBuilder.transaction;
 
 import java.util.Calendar;
 import java.util.Date;
-import java.util.List;
 import java.util.function.Predicate;
 
 import org.apache.commons.lang3.time.DateUtils;
@@ -17,46 +20,66 @@ import org.junit.Test;
 
 import test.transactions.Transaction;
 
-import com.google.common.collect.Lists;
-
 public class LambdaTest {
+
+    // given
+    private static final Calendar CALENDAR =
+	    new Calendar.Builder()
+		    .setDate(2014, Calendar.DECEMBER, 21)
+		    .build();
+
+    private static final Date DUE_DAY = CALENDAR.getTime();
+
+    private static final Date TIMESTAMP_IN_DUE_DAY =
+	    new Calendar.Builder()
+		    .setDate(CALENDAR.get(YEAR), CALENDAR.get(MONTH), CALENDAR.get(DAY_OF_MONTH))
+		    .setTimeOfDay(23, 59, 59)
+		    .build().getTime();
+
+    /** System under test. */
+    private static final Predicate<Transaction> WHITELISTED =
+	    transaction -> WHITELISTED_USERS.contains(transaction.getUserId());
 
     @Test
     public void whitelisted_predicate()
     {
-	// given
-	final List<Long> whitelistedUsers = Lists.newArrayList(WHITELISTED_USER_1, WHITELISTED_USER_2);
-	final Predicate<Transaction> whitelisted = tr -> whitelistedUsers.contains(tr.getUserId());
-
 	// when
-	final boolean test = whitelisted.test(WHITELISTED_USER_1_TRANSACTION);
+	final boolean test = WHITELISTED.test(WHITELISTED_USER_1_TRANSACTION);
 
 	// then
-	assertThat(test, is(true));
+	assertThat(test, is(equalTo(true)));
     }
 
+    /** System under test. */
+    private static final Predicate<Transaction> SAME_DAY =
+	    transaction -> DateUtils.isSameDay(transaction.getDate(), DUE_DAY);
+
     @Test
-    public void date_comparison_predicate()
+    public void same_date_predicate()
     {
 	// given
-	final Date startOfDay = new Calendar.Builder()
-		.setDate(2014, Calendar.DECEMBER, 21)
-		.setTimeOfDay(0, 1, 1)
-		.build().getTime();
-
-	final Date endOfDay = new Calendar.Builder()
-		.setDate(2014, Calendar.DECEMBER, 21)
-		.setTimeOfDay(23, 59, 59)
-		.build().getTime();
-
-	final Predicate<Transaction> sameDay = tr -> DateUtils.isSameDay(tr.getDate(), startOfDay);
-
-	final Transaction transaction = transaction().date(endOfDay).build();
+	final Transaction transaction = transaction().date(TIMESTAMP_IN_DUE_DAY).build();
 
 	// when
-	final boolean test = sameDay.test(transaction);
+	final boolean test = SAME_DAY.test(transaction);
 
 	// then
-	assertThat(test, is(true));
+	assertThat(test, is(equalTo(true)));
+    }
+
+    /** System under test. */
+    private static final Predicate<Transaction> ANALYSED = SAME_DAY.and(WHITELISTED.negate());
+
+    @Test
+    public void compound_predicate()
+    {
+	// given
+	final Transaction analysed = transaction().user(BLACKLISTED_USER_1).date(TIMESTAMP_IN_DUE_DAY).build();
+
+	// when
+	final boolean test = ANALYSED.test(analysed);
+
+	// then
+	assertThat(test, is(equalTo(true)));
     }
 }
