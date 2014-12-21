@@ -12,7 +12,8 @@ import test.transactions.Transaction;
 
 public class FraudAnalyserTest {
 
-    FraudAnalyser analyser;
+    /** System under test. */
+    private FraudAnalyser analyser;
 
     @Before
     public void setup()
