@@ -1,4 +1,4 @@
-package solution;
+package requirements;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static solution.TransactionBuilder.transaction;

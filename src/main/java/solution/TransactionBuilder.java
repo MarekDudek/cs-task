@@ -43,7 +43,7 @@ public class TransactionBuilder {
     }
 
     public TransactionBuilder fromAccount(final long fromAccount) {
-	accountFromId = fromAccount;
+	accountFromId = Long.valueOf(fromAccount);
 	return this;
     }
 

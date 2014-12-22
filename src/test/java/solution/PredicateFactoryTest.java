@@ -6,11 +6,11 @@ import static java.util.Calendar.YEAR;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
+import static requirements.TestRequirements.BLACKLISTED_USER_1;
+import static requirements.TestRequirements.WHITELISTED_USERS;
+import static requirements.TestRequirements.WHITELISTED_USER_1_TRANSACTION;
 import static solution.PredicateFactory.sameDate;
 import static solution.PredicateFactory.belongsTo;
-import static solution.TestRequirements.BLACKLISTED_USER_1;
-import static solution.TestRequirements.WHITELISTED_USERS;
-import static solution.TestRequirements.WHITELISTED_USER_1_TRANSACTION;
 import static solution.TransactionBuilder.transaction;
 
 import java.util.Calendar;
@@ -21,7 +21,7 @@ import org.junit.Test;
 
 import test.transactions.Transaction;
 
-public class LambdaTest {
+public class PredicateFactoryTest {
 
     // given
     private static final Calendar CALENDAR =

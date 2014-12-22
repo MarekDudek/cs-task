@@ -6,13 +6,13 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
+import static requirements.TestRequirements.BLACKLISTED_USERS;
+import static requirements.TestRequirements.BLACKLISTED_USER_1;
+import static requirements.TestRequirements.REGULAR_USER_1;
+import static requirements.TestRequirements.WHITELISTED_USERS;
+import static requirements.TestRequirements.WHITELISTED_USER_1;
 import static solution.PredicateFactory.belongsTo;
 import static solution.PredicateFactory.sameDate;
-import static solution.TestRequirements.BLACKLISTED_USERS;
-import static solution.TestRequirements.BLACKLISTED_USER_1;
-import static solution.TestRequirements.REGULAR_USER_1;
-import static solution.TestRequirements.WHITELISTED_USERS;
-import static solution.TestRequirements.WHITELISTED_USER_1;
 import static solution.TransactionBuilder.transaction;
 
 import java.util.Calendar;

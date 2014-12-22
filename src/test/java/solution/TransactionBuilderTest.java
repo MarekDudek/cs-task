@@ -1,6 +1,7 @@
 package solution;
 
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static solution.TransactionBuilder.transaction;
 
@@ -35,11 +36,11 @@ public class TransactionBuilderTest {
 		.build();
 
 	// then
-	assertThat(transaction.getTransactionId(), equalTo(TRANSACTION_ID));
-	assertThat(transaction.getUserId(), equalTo(USER_ID));
-	assertThat(transaction.getDate(), equalTo(DATE));
-	assertThat(transaction.getAccountToId(), equalTo(TO_ACCOUNT));
-	assertThat(transaction.getAccountFromId(), equalTo(FROM_ACCOUNT));
-	assertThat(transaction.getAmount(), equalTo(AMOUNT));
+	assertThat(transaction.getTransactionId(), is(equalTo(TRANSACTION_ID)));
+	assertThat(transaction.getUserId(), is(equalTo(USER_ID)));
+	assertThat(transaction.getDate(), is(equalTo(DATE)));
+	assertThat(transaction.getAccountToId(), is(equalTo(TO_ACCOUNT)));
+	assertThat(transaction.getAccountFromId(), is(equalTo(FROM_ACCOUNT)));
+	assertThat(transaction.getAmount(), is(equalTo(AMOUNT)));
     }
 }
