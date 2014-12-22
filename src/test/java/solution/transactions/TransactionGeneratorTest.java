@@ -24,13 +24,22 @@ import test.transactions.Transaction;
 public class TransactionGeneratorTest {
 
     private static final int SEED = 0;
+
+    private static final Date MEDIAN_DATE = new Calendar.Builder()
+	    .setDate(2014, DECEMBER, 22)
+	    .setTimeOfDay(12, 33, 58)
+	    .set(MILLISECOND, 523)
+	    .build().getTime();
+    private static final int DAYS_MARGIN = 1;
+
     private TransactionGenerator generator;
 
     @Before
     public void setup()
     {
 	// given
-	generator = new TransactionGenerator(0, 10, 20);
+
+	generator = new TransactionGenerator(0, 10, 20, MEDIAN_DATE, DAYS_MARGIN);
     }
 
     @Test
@@ -62,7 +71,7 @@ public class TransactionGeneratorTest {
     public void values_are_random_but_alway_the_same_sequence_is_generated()
     {
 	// given
-	final TransactionGenerator secondGenerator = new TransactionGenerator(SEED, 10, 20);
+	final TransactionGenerator secondGenerator = new TransactionGenerator(SEED, 10, 20, MEDIAN_DATE, DAYS_MARGIN);
 
 	// when
 	final Transaction transaction1 = generator.randomTransaction();
@@ -105,8 +114,10 @@ public class TransactionGeneratorTest {
 
 	for (int i = 0; i < 1000; i++)
 	{
+	    // when
 	    final Date date = generator.randomDate(median, margin);
 
+	    // then
 	    assertThat(date, greaterThan(lowerBound));
 	    assertThat(date, lessThan(upperBound));
 	}

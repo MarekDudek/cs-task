@@ -3,7 +3,6 @@ package solution.transactions;
 import static com.google.common.collect.Lists.newArrayListWithCapacity;
 
 import java.math.BigDecimal;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -12,16 +11,22 @@ import java.util.Random;
 import solution.utils.DateUtilities;
 import test.transactions.Transaction;
 
+import com.google.common.annotations.VisibleForTesting;
+
 public class TransactionGenerator {
 
     private final Random generator;
     private final List<Long> users;
     private final List<Long> accounts;
+    private final Date medianDate;
+    private final int daysMargin;
 
     public TransactionGenerator(
 	    final long seed,
 	    final int numberOfUsers,
-	    final int numberOfAccounts)
+	    final int numberOfAccounts,
+	    final Date medianDate,
+	    final int daysMargin)
     {
 	generator = new Random(seed);
 
@@ -35,10 +40,8 @@ public class TransactionGenerator {
 	    accounts.add(positiveLong());
 	}
 
-	final Date date = new Date();
-	final Calendar calendar = Calendar.getInstance();
-	calendar.setTime(date);
-	calendar.add(Calendar.DAY_OF_MONTH, 7);
+	this.medianDate = medianDate;
+	this.daysMargin = daysMargin;
     }
 
     public Iterator<Transaction> generateIterator(final int numberOfTransactions)
@@ -68,12 +71,28 @@ public class TransactionGenerator {
 
 	transaction.setTransactionId(positiveLong());
 	transaction.setUserId(randomUser(generator));
-	transaction.setDate(randomDate(generator));
+	transaction.setDate(randomDate(medianDate, daysMargin));
 	transaction.setAccountFromId(randomAccount(generator));
 	transaction.setAccountToId(randomAccount(generator));
-	transaction.setAmount(bigDecimal());
+	transaction.setAmount(positiveBigDecimal());
 
 	return transaction;
+    }
+
+    @VisibleForTesting
+    Date randomDate(final Date median, final int margin)
+    {
+	final Date lowerBound = DateUtilities.startOfDayNDaysEarlier(median, margin);
+	final long lowerMillis = lowerBound.getTime();
+
+	final Date upperBound = DateUtilities.endOfDayNDaysLater(median, margin);
+	final long upperMillis = upperBound.getTime();
+
+	final long difference = upperMillis - lowerMillis;
+
+	final long randomMillis = lowerMillis + positiveLong() % difference;
+	final Date randomDate = new Date(randomMillis);
+	return randomDate;
     }
 
     private long positiveLong()
@@ -86,12 +105,7 @@ public class TransactionGenerator {
 	return positive;
     }
 
-    private Date randomDate(final Random generator)
-    {
-	return new Date(generator.nextLong());
-    }
-
-    private BigDecimal bigDecimal()
+    private BigDecimal positiveBigDecimal()
     {
 	return new BigDecimal(positiveLong());
     }
@@ -106,20 +120,5 @@ public class TransactionGenerator {
     {
 	final int randomIndex = generator.nextInt(accounts.size());
 	return accounts.get(randomIndex);
-    }
-
-    public Date randomDate(final Date median, final int margin)
-    {
-	final Date lowerBound = DateUtilities.startOfDayNDaysEarlier(median, margin);
-	final long lowerMillis = lowerBound.getTime();
-
-	final Date upperBound = DateUtilities.endOfDayNDaysLater(median, margin);
-	final long upperMillis = upperBound.getTime();
-
-	final long difference = upperMillis - lowerMillis;
-
-	final long randomMillis = lowerMillis + positiveLong() % difference;
-	final Date randomDate = new Date(randomMillis);
-	return randomDate;
     }
 }
