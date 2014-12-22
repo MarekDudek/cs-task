@@ -24,7 +24,7 @@ public class TransactionGeneratorTest {
     public void setup()
     {
 	// given
-	generator = new TransactionGenerator(0);
+	generator = new TransactionGenerator(0, 10, 20);
     }
 
     @Test
@@ -56,7 +56,7 @@ public class TransactionGeneratorTest {
     public void values_are_random_but_alway_the_same_sequence_is_generated()
     {
 	// given
-	final TransactionGenerator secondGenerator = new TransactionGenerator(SEED);
+	final TransactionGenerator secondGenerator = new TransactionGenerator(SEED, 10, 20);
 
 	// when
 	final Transaction transaction1 = generator.randomTransaction();
