@@ -5,25 +5,32 @@ import static com.google.common.collect.Lists.newArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Predicate;
 
+import solution.collectors.StatsCollector;
 import test.transactions.Transaction;
 
+import com.google.common.collect.Sets;
+
 /**
- * Main class. Analyse all transactions from given date and return suspicious
+ * Main class. Analyze all transactions from given date and return suspicious
  * transactions. Do not return transactions that are not suspicious.
  */
 public class FraudAnalyser {
 
     private Predicate<Transaction> skipAnalysis;
-    private Predicate<Transaction> suspiciousIndividually;
+    private Predicate<Transaction> suspectIndividually;
+    private StatsCollector collector;
 
     public FraudAnalyser(
 	    final Predicate<Transaction> skipAnalysis,
-	    final Predicate<Transaction> suspiciousIndividually)
+	    final Predicate<Transaction> suspiciousIndividually,
+	    final StatsCollector collector)
     {
 	this.skipAnalysis = skipAnalysis;
-	this.suspiciousIndividually = suspiciousIndividually;
+	this.suspectIndividually = suspiciousIndividually;
+	this.collector = collector;
     }
 
     /**
@@ -37,7 +44,7 @@ public class FraudAnalyser {
     public Iterator<Transaction> analyse(final Iterator<Transaction> transactions, final Date date)
     {
 	final List<Transaction> input = newArrayList(transactions);
-	final List<Transaction> output = newArrayList();
+	final List<Transaction> suspicious = newArrayList();
 
 	for (final Transaction transaction : input)
 	{
@@ -45,11 +52,18 @@ public class FraudAnalyser {
 		continue;
 	    }
 
-	    if (suspiciousIndividually.test(transaction)) {
-		output.add(transaction);
+	    if (suspectIndividually.test(transaction)) {
+		suspicious.add(transaction);
 	    }
+
+	    collector.collect(transaction);
 	}
 
-	return output.iterator();
+	final List<Transaction> suspiciousBasedOnStats = collector.suspicious();
+
+	final Set<Transaction> intersection = Sets.newHashSet(suspicious);
+	intersection.addAll(suspiciousBasedOnStats);
+
+	return intersection.iterator();
     }
 }
