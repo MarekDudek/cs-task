@@ -1,64 +1,65 @@
 package test.analyser;
 
-import static org.hamcrest.Matchers.notNullValue;
+import static com.google.common.collect.Lists.newArrayList;
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertThat;
-import static solution.TestRequirements.BLACKLISTED_USER_1_TRANSACTION;
-import static solution.TestRequirements.BLACKLISTED_USER_2_TRANSACTION;
-import static solution.TestRequirements.BLACKLISTED_USER_3_TRANSACTION;
-import static solution.TestRequirements.WHITELISTED_USER_1_TRANSACTION;
-import static solution.TestRequirements.WHITELISTED_USER_2_TRANSACTION;
+import static solution.PredicateFactory.blacklisted;
+import static solution.PredicateFactory.sameDate;
+import static solution.PredicateFactory.whitelisted;
+import static solution.TestRequirements.BLACKLISTED_USERS;
+import static solution.TestRequirements.BLACKLISTED_USER_1;
+import static solution.TestRequirements.WHITELISTED_USERS;
+import static solution.TestRequirements.WHITELISTED_USER_1;
+import static solution.TransactionBuilder.transaction;
 
-import java.util.Collections;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.function.Predicate;
 
-import org.junit.Before;
 import org.junit.Test;
 
 import test.transactions.Transaction;
-
-import com.google.common.collect.Lists;
 
 public class FraudAnalyserTest {
 
     /** System under test. */
     private FraudAnalyser analyser;
 
-    @Before
-    public void setup()
-    {
-	analyser = new FraudAnalyser();
-    }
+    private static final Date DUE_DAY =
+	    new Calendar.Builder()
+		    .setDate(2014, Calendar.DECEMBER, 21)
+		    .setTimeOfDay(23, 59, 59)
+		    .build().getTime();
+
+    private static final Date OTHER_DAY =
+	    new Calendar.Builder()
+		    .setDate(1997, Calendar.JULY, 1)
+		    .setTimeOfDay(1, 1, 1)
+		    .build().getTime();
+
+    private Predicate<Transaction> skipAnalysis = whitelisted(WHITELISTED_USERS).or(sameDate(DUE_DAY).negate());
+    private Predicate<Transaction> suspiciousIndividually = blacklisted(BLACKLISTED_USERS);
 
     @Test
-    public void test()
-    {
-	// when
-	final Iterator<Transaction> suspictious = analyser.analyse(Collections.emptyIterator(), null);
-
-	// then
-	assertThat(suspictious, notNullValue());
-    }
-
-    @Test
-    public void test_with_long_streak()
+    public void skipping_and_individual_tests_work_fine()
     {
 	// given
-	final List<Transaction> transactions = Lists.newArrayList
+	analyser = new FraudAnalyser(skipAnalysis, suspiciousIndividually);
+
+	final List<Transaction> transactions = newArrayList
 		(
-			BLACKLISTED_USER_1_TRANSACTION,
-			BLACKLISTED_USER_2_TRANSACTION,
-			BLACKLISTED_USER_3_TRANSACTION,
-			WHITELISTED_USER_1_TRANSACTION,
-			WHITELISTED_USER_2_TRANSACTION
+			transaction().date(DUE_DAY).user(WHITELISTED_USER_1).build(),
+			transaction().date(OTHER_DAY).user(BLACKLISTED_USER_1).build(),
+			transaction().date(DUE_DAY).user(BLACKLISTED_USER_1).build()
 		);
 
 	// when
-	final Iterator<Transaction> iterator = analyser.analyse(transactions.iterator(), new Date());
+	final Iterator<Transaction> iterator = analyser.analyse(transactions.iterator(), DUE_DAY);
+	final List<Transaction> output = newArrayList(iterator);
 
-	while (iterator.hasNext()) {
-	    System.out.println(iterator.next());
-	}
+	// then
+	assertThat(output, hasSize(1));
     }
 }

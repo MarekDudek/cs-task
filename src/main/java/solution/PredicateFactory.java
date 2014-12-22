@@ -19,4 +19,9 @@ public class PredicateFactory {
     {
 	return transaction -> DateUtils.isSameDay(transaction.getDate(), date);
     }
+
+    public static Predicate<Transaction> blacklisted(final List<Long> blacklistedUsers)
+    {
+	return transaction -> blacklistedUsers.contains(transaction.getUserId());
+    }
 }

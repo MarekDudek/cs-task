@@ -21,6 +21,8 @@ public class TestRequirements {
     public static final long BLACKLISTED_USER_2 = 1052L;
     public static final long BLACKLISTED_USER_3 = 2103L;
 
+    public static final List<Long> BLACKLISTED_USERS = newArrayList(BLACKLISTED_USER_1, BLACKLISTED_USER_2, BLACKLISTED_USER_3);
+
     public static final Transaction BLACKLISTED_USER_1_TRANSACTION = transaction().user(BLACKLISTED_USER_1).build();
     public static final Transaction BLACKLISTED_USER_2_TRANSACTION = transaction().user(BLACKLISTED_USER_2).build();
     public static final Transaction BLACKLISTED_USER_3_TRANSACTION = transaction().user(BLACKLISTED_USER_3).build();
