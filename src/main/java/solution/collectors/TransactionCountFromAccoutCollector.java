@@ -10,8 +10,8 @@ import test.transactions.Transaction;
 
 public class TransactionCountFromAccoutCollector implements StatsCollector {
 
-    private final Map<Long, Collection<Transaction>> transactionsPerFromAccount = newHashMap();
     private final int maximumAllowed;
+    private final Map<Long, Collection<Transaction>> transactionsPerFromAccount = newHashMap();
 
     public TransactionCountFromAccoutCollector(final int maximumAllowed) {
 	this.maximumAllowed = maximumAllowed;
@@ -40,7 +40,8 @@ public class TransactionCountFromAccoutCollector implements StatsCollector {
 	for (final Long account : transactionsPerFromAccount.keySet())
 	{
 	    final Collection<Transaction> transactions = transactionsPerFromAccount.get(account);
-	    if (transactions.size() > maximumAllowed) {
+	    if (transactions.size() > maximumAllowed)
+	    {
 		union.addAll(transactions);
 	    }
 	}

@@ -30,7 +30,7 @@ public class TransactionCountFromAccoutCollectorTest {
     public void test()
     {
 	// given
-	final TransactionCountFromAccoutCollector collector = new TransactionCountFromAccoutCollector(2);
+	final StatsCollector collector = new TransactionCountFromAccoutCollector(2);
 
 	// when
 	collector.collect(TRANSACTION_1);
