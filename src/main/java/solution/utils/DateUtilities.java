@@ -1,11 +1,5 @@
 package solution.utils;
 
-import static java.util.Calendar.DAY_OF_YEAR;
-import static java.util.Calendar.HOUR_OF_DAY;
-import static java.util.Calendar.MILLISECOND;
-import static java.util.Calendar.MINUTE;
-import static java.util.Calendar.SECOND;
-
 import java.util.Calendar;
 import java.util.Date;
 
@@ -17,12 +11,12 @@ public class DateUtilities {
 
 	calendar.setTime(date);
 
-	calendar.add(DAY_OF_YEAR, -days);
+	calendar.add(Calendar.DAY_OF_YEAR, -days);
 
-	calendar.set(HOUR_OF_DAY, 0);
-	calendar.set(MINUTE, 0);
-	calendar.set(SECOND, 0);
-	calendar.set(MILLISECOND, 0);
+	calendar.set(Calendar.HOUR_OF_DAY, 0);
+	calendar.set(Calendar.MINUTE, 0);
+	calendar.set(Calendar.SECOND, 0);
+	calendar.set(Calendar.MILLISECOND, 0);
 
 	return calendar.getTime();
     }
@@ -33,13 +27,12 @@ public class DateUtilities {
 
 	calendar.setTime(date);
 
-	calendar.add(DAY_OF_YEAR, days);
-	calendar.set(HOUR_OF_DAY, 23);
-	calendar.set(MINUTE, 59);
-	calendar.set(SECOND, 59);
-	calendar.set(MILLISECOND, 999);
+	calendar.add(Calendar.DAY_OF_YEAR, days);
+	calendar.set(Calendar.HOUR_OF_DAY, 23);
+	calendar.set(Calendar.MINUTE, 59);
+	calendar.set(Calendar.SECOND, 59);
+	calendar.set(Calendar.MILLISECOND, 999);
 
 	return calendar.getTime();
     }
-
 }
