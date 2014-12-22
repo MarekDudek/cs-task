@@ -7,7 +7,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static solution.PredicateFactory.sameDate;
-import static solution.PredicateFactory.whitelisted;
+import static solution.PredicateFactory.belongsTo;
 import static solution.TestRequirements.BLACKLISTED_USER_1;
 import static solution.TestRequirements.WHITELISTED_USERS;
 import static solution.TestRequirements.WHITELISTED_USER_1_TRANSACTION;
@@ -41,7 +41,7 @@ public class LambdaTest {
     public void whitelisted_predicate()
     {
 	// when
-	final boolean test = whitelisted(WHITELISTED_USERS).test(WHITELISTED_USER_1_TRANSACTION);
+	final boolean test = belongsTo(WHITELISTED_USERS).test(WHITELISTED_USER_1_TRANSACTION);
 
 	// then
 	assertThat(test, is(equalTo(true)));
@@ -61,7 +61,7 @@ public class LambdaTest {
     }
 
     /** System under test. */
-    private static final Predicate<Transaction> ANALYSED = sameDate(DUE_DAY).and(whitelisted(WHITELISTED_USERS).negate());
+    private static final Predicate<Transaction> ANALYSED = sameDate(DUE_DAY).and(belongsTo(WHITELISTED_USERS).negate());
 
     @Test
     public void compound_predicate()

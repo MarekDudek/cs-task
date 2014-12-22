@@ -1,5 +1,6 @@
 package test.analyser;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newHashSet;
 
@@ -27,9 +28,9 @@ public class FraudAnalyser {
 	    final Predicate<Transaction> suspiciousIndividually,
 	    final StatsCollector collector)
     {
-	this.skipAnalysis = skipAnalysis;
-	this.suspectIndividually = suspiciousIndividually;
-	this.collector = collector;
+	this.skipAnalysis = checkNotNull(skipAnalysis);
+	this.suspectIndividually = checkNotNull(suspiciousIndividually);
+	this.collector = checkNotNull(collector);
     }
 
     /**

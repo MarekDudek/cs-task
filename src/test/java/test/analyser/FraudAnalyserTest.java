@@ -6,9 +6,8 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
-import static solution.PredicateFactory.blacklisted;
+import static solution.PredicateFactory.belongsTo;
 import static solution.PredicateFactory.sameDate;
-import static solution.PredicateFactory.whitelisted;
 import static solution.TestRequirements.BLACKLISTED_USERS;
 import static solution.TestRequirements.BLACKLISTED_USER_1;
 import static solution.TestRequirements.REGULAR_USER_1;
@@ -39,29 +38,28 @@ public class FraudAnalyserTest {
 		    .setTimeOfDay(23, 59, 59)
 		    .build().getTime();
 
-    private static final Transaction REGULAR_USER_ON_DUE_DAY = transaction().date(DUE_DAY).user(REGULAR_USER_1).build();
-
     private static final Date OTHER_DAY =
 	    new Calendar.Builder()
 		    .setDate(1997, Calendar.JULY, 1)
 		    .setTimeOfDay(1, 1, 1)
 		    .build().getTime();
 
-    private static final Predicate<Transaction> SKIP_ANALYSIS = whitelisted(WHITELISTED_USERS).or(sameDate(DUE_DAY).negate());
-    private static final Predicate<Transaction> SUSPECT_INDIVIDUALLY = blacklisted(BLACKLISTED_USERS);
+    private static final Predicate<Transaction> SKIP_ANALYSIS = belongsTo(WHITELISTED_USERS).or(sameDate(DUE_DAY).negate());
+    private static final Predicate<Transaction> SUSPECT_INDIVIDUALLY = belongsTo(BLACKLISTED_USERS);
 
     private static final Transaction WHITELISTED_USER_ON_DUE_DAY = transaction().date(DUE_DAY).user(WHITELISTED_USER_1).build();
     private static final Transaction BLACKLISTED_USER_ON_DUE_DAY = transaction().date(DUE_DAY).user(BLACKLISTED_USER_1).build();
     private static final Transaction BLACKLISTED_USER_ON_OTHER_DAY = transaction().date(OTHER_DAY).user(BLACKLISTED_USER_1).build();
+    private static final Transaction REGULAR_USER_ON_DUE_DAY = transaction().date(DUE_DAY).user(REGULAR_USER_1).build();
 
     @Test
-    public void skipping_and_individual_tests_work_fine()
+    public void skipping_and_individual_analysis_work_fine()
     {
 	// given
-	final StatsCollector collector = new StatsCollector() {
+	final StatsCollector nullCollector = new StatsCollector() {
 	};
 
-	analyser = new FraudAnalyser(SKIP_ANALYSIS, SUSPECT_INDIVIDUALLY, collector);
+	analyser = new FraudAnalyser(SKIP_ANALYSIS, SUSPECT_INDIVIDUALLY, nullCollector);
 
 	final List<Transaction> transactions = newArrayList
 		(

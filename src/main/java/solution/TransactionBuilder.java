@@ -7,6 +7,13 @@ import test.transactions.Transaction;
 
 public class TransactionBuilder {
 
+    private Long transactionId;
+    private Long userId;
+    private Date date;
+    private Long accountToId;
+    private Long accountFromId;
+    private BigDecimal amount;
+
     public static TransactionBuilder transaction() {
 	return new TransactionBuilder();
     }
@@ -14,27 +21,6 @@ public class TransactionBuilder {
     private TransactionBuilder() {
 	super();
     }
-
-    public Transaction build()
-    {
-	final Transaction transaction = new Transaction();
-
-	transaction.setTransactionId(transactionId);
-	transaction.setUserId(userId);
-	transaction.setDate(date);
-	transaction.setAccountToId(accountToId);
-	transaction.setAccountFromId(accountFromId);
-	transaction.setAmount(amount);
-
-	return transaction;
-    }
-
-    private Long transactionId;
-    private Long userId;
-    private Date date;
-    private Long accountToId;
-    private Long accountFromId;
-    private BigDecimal amount;
 
     public TransactionBuilder id(final long id) {
 	transactionId = Long.valueOf(id);
@@ -64,5 +50,19 @@ public class TransactionBuilder {
     public TransactionBuilder amount(final BigDecimal amount) {
 	this.amount = amount;
 	return this;
+    }
+
+    public Transaction build()
+    {
+	final Transaction transaction = new Transaction();
+
+	transaction.setTransactionId(transactionId);
+	transaction.setUserId(userId);
+	transaction.setDate(date);
+	transaction.setAccountToId(accountToId);
+	transaction.setAccountFromId(accountFromId);
+	transaction.setAmount(amount);
+
+	return transaction;
     }
 }
