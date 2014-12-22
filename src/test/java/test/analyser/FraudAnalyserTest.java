@@ -1,6 +1,7 @@
 package test.analyser;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertThat;
 import static org.mockito.BDDMockito.given;
@@ -31,11 +32,14 @@ public class FraudAnalyserTest {
     /** System under test. */
     private FraudAnalyser analyser;
 
+    // given
     private static final Date DUE_DAY =
 	    new Calendar.Builder()
 		    .setDate(2014, Calendar.DECEMBER, 21)
 		    .setTimeOfDay(23, 59, 59)
 		    .build().getTime();
+
+    private static final Transaction REGULAR_USER_ON_DUE_DAY = transaction().date(DUE_DAY).user(REGULAR_USER_1).build();
 
     private static final Date OTHER_DAY =
 	    new Calendar.Builder()
@@ -43,23 +47,28 @@ public class FraudAnalyserTest {
 		    .setTimeOfDay(1, 1, 1)
 		    .build().getTime();
 
-    private Predicate<Transaction> skipAnalysis = whitelisted(WHITELISTED_USERS).or(sameDate(DUE_DAY).negate());
-    private Predicate<Transaction> suspiciousIndividually = blacklisted(BLACKLISTED_USERS);
+    private static final Predicate<Transaction> SKIP_ANALYSIS = whitelisted(WHITELISTED_USERS).or(sameDate(DUE_DAY).negate());
+    private static final Predicate<Transaction> SUSPECT_INDIVIDUALLY = blacklisted(BLACKLISTED_USERS);
+
+    private static final Transaction WHITELISTED_USER_ON_DUE_DAY = transaction().date(DUE_DAY).user(WHITELISTED_USER_1).build();
+    private static final Transaction BLACKLISTED_USER_ON_DUE_DAY = transaction().date(DUE_DAY).user(BLACKLISTED_USER_1).build();
+    private static final Transaction BLACKLISTED_USER_ON_OTHER_DAY = transaction().date(OTHER_DAY).user(BLACKLISTED_USER_1).build();
 
     @Test
     public void skipping_and_individual_tests_work_fine()
     {
 	// given
-	StatsCollector collector = new StatsCollector() {
+	final StatsCollector collector = new StatsCollector() {
 	};
-	analyser = new FraudAnalyser(skipAnalysis, suspiciousIndividually, collector);
+
+	analyser = new FraudAnalyser(SKIP_ANALYSIS, SUSPECT_INDIVIDUALLY, collector);
 
 	final List<Transaction> transactions = newArrayList
 		(
-			transaction().date(DUE_DAY).user(WHITELISTED_USER_1).build(),
-			transaction().date(OTHER_DAY).user(BLACKLISTED_USER_1).build(),
-			transaction().date(DUE_DAY).user(BLACKLISTED_USER_1).build(),
-			transaction().date(DUE_DAY).user(REGULAR_USER_1).build()
+			WHITELISTED_USER_ON_DUE_DAY,
+			BLACKLISTED_USER_ON_OTHER_DAY,
+			BLACKLISTED_USER_ON_DUE_DAY,
+			REGULAR_USER_ON_DUE_DAY
 		);
 
 	// when
@@ -68,25 +77,24 @@ public class FraudAnalyserTest {
 
 	// then
 	assertThat(output, hasSize(1));
+	assertThat(output, hasItem(BLACKLISTED_USER_ON_DUE_DAY));
     }
 
     @Test
     public void merging_suspicious_works_fine()
     {
 	// given
-	final Transaction regularTransactionOnDueDay = transaction().date(DUE_DAY).user(REGULAR_USER_1).build();
-
 	final StatsCollector collector = mock(StatsCollector.class);
-	given(collector.suspicious()).willReturn(newArrayList(regularTransactionOnDueDay));
+	given(collector.suspicious()).willReturn(newArrayList(REGULAR_USER_ON_DUE_DAY));
 
-	analyser = new FraudAnalyser(skipAnalysis, suspiciousIndividually, collector);
+	analyser = new FraudAnalyser(SKIP_ANALYSIS, SUSPECT_INDIVIDUALLY, collector);
 
 	final List<Transaction> transactions = newArrayList
 		(
-			transaction().date(DUE_DAY).user(WHITELISTED_USER_1).build(),
-			transaction().date(OTHER_DAY).user(BLACKLISTED_USER_1).build(),
-			transaction().date(DUE_DAY).user(BLACKLISTED_USER_1).build(),
-			regularTransactionOnDueDay
+			WHITELISTED_USER_ON_DUE_DAY,
+			BLACKLISTED_USER_ON_OTHER_DAY,
+			BLACKLISTED_USER_ON_DUE_DAY,
+			REGULAR_USER_ON_DUE_DAY
 		);
 
 	// when
@@ -95,5 +103,7 @@ public class FraudAnalyserTest {
 
 	// then
 	assertThat(output, hasSize(2));
+	assertThat(output, hasItem(BLACKLISTED_USER_ON_DUE_DAY));
+	assertThat(output, hasItem(REGULAR_USER_ON_DUE_DAY));
     }
 }

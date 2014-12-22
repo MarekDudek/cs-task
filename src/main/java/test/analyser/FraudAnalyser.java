@@ -1,17 +1,16 @@
 package test.analyser;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.collect.Sets.newHashSet;
 
+import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
 
 import solution.collectors.StatsCollector;
 import test.transactions.Transaction;
-
-import com.google.common.collect.Sets;
 
 /**
  * Main class. Analyze all transactions from given date and return suspicious
@@ -43,8 +42,8 @@ public class FraudAnalyser {
      */
     public Iterator<Transaction> analyse(final Iterator<Transaction> transactions, final Date date)
     {
-	final List<Transaction> input = newArrayList(transactions);
-	final List<Transaction> suspicious = newArrayList();
+	final Collection<Transaction> input = newArrayList(transactions);
+	final Collection<Transaction> suspicious = newArrayList();
 
 	for (final Transaction transaction : input)
 	{
@@ -59,11 +58,11 @@ public class FraudAnalyser {
 	    collector.collect(transaction);
 	}
 
-	final List<Transaction> suspiciousBasedOnStats = collector.suspicious();
+	final Collection<Transaction> suspiciousBasedOnStats = collector.suspicious();
 
-	final Set<Transaction> intersection = Sets.newHashSet(suspicious);
-	intersection.addAll(suspiciousBasedOnStats);
+	final Set<Transaction> union = newHashSet(suspicious);
+	union.addAll(suspiciousBasedOnStats);
 
-	return intersection.iterator();
+	return union.iterator();
     }
 }
