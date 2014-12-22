@@ -5,6 +5,7 @@ import static java.util.Calendar.DECEMBER;
 import static java.util.Calendar.MILLISECOND;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.lessThan;
 import static org.hamcrest.Matchers.lessThanOrEqualTo;
@@ -25,11 +26,13 @@ import test.transactions.Transaction;
 
 public class TransactionGeneratorTest {
 
-    private static final int NUMBER_OF_TRANSACTIONS = 20;
-
     private static final int SEED = 0;
 
-    private static final int NUMBER_OF_USERS = 10;
+    private static final int MIN_ID = 1000;
+    private static final int MAX_ID = 9999;
+
+    private static final int TRANSACTIONS_COUNT = 20;
+    private static final int USERS_COUNT = 10;
 
     private static final Date MEDIAN_DATE = new Calendar.Builder()
 	    .setDate(2014, DECEMBER, 22)
@@ -38,7 +41,8 @@ public class TransactionGeneratorTest {
 	    .build().getTime();
     private static final int DAYS_MARGIN = 1;
 
-    private static final BigDecimal MAXIMUM_AMOUNT = new BigDecimal(100);
+    private static final BigDecimal MIN_AMOUNT = new BigDecimal(100);
+    private static final BigDecimal MAX_AMOUNT = new BigDecimal(999);
 
     private TransactionGenerator generator;
 
@@ -46,8 +50,8 @@ public class TransactionGeneratorTest {
     public void setup()
     {
 	// given
-
-	generator = new TransactionGenerator(SEED, NUMBER_OF_USERS, NUMBER_OF_TRANSACTIONS, MEDIAN_DATE, DAYS_MARGIN, MAXIMUM_AMOUNT);
+	generator =
+		new TransactionGenerator(SEED, MIN_ID, MAX_ID, USERS_COUNT, TRANSACTIONS_COUNT, MEDIAN_DATE, DAYS_MARGIN, MIN_AMOUNT, MAX_AMOUNT);
     }
 
     @Test
@@ -80,7 +84,7 @@ public class TransactionGeneratorTest {
     {
 	// given
 	final TransactionGenerator secondGenerator =
-		new TransactionGenerator(SEED, NUMBER_OF_USERS, NUMBER_OF_TRANSACTIONS, MEDIAN_DATE, DAYS_MARGIN, MAXIMUM_AMOUNT);
+		new TransactionGenerator(SEED, MIN_ID, MAX_ID, USERS_COUNT, TRANSACTIONS_COUNT, MEDIAN_DATE, DAYS_MARGIN, MIN_AMOUNT, MAX_AMOUNT);
 
 	// when
 	final Transaction transaction1 = generator.randomTransaction();
@@ -101,10 +105,10 @@ public class TransactionGeneratorTest {
     public void iterators_are_random_but_always_the_same_elements_are_generated()
     {
 	// given
-	final int sequenceLength = 100;
 	final TransactionGenerator secondGenerator =
-		new TransactionGenerator(SEED, NUMBER_OF_USERS, NUMBER_OF_TRANSACTIONS, MEDIAN_DATE, DAYS_MARGIN, MAXIMUM_AMOUNT);
+		new TransactionGenerator(SEED, MIN_ID, MAX_ID, USERS_COUNT, TRANSACTIONS_COUNT, MEDIAN_DATE, DAYS_MARGIN, MIN_AMOUNT, MAX_AMOUNT);
 
+	final int sequenceLength = 1000;
 	// when
 	final Iterator<Transaction> iterator1 = generator.generateIterator(sequenceLength);
 	final Iterator<Transaction> iterator2 = secondGenerator.generateIterator(sequenceLength);
@@ -113,6 +117,7 @@ public class TransactionGeneratorTest {
 	{
 	    final Transaction transaction1 = iterator1.next();
 	    final Transaction transaction2 = iterator2.next();
+	    // System.out.println(transaction1);
 
 	    // then
 	    assertThat(TransactionComparator.INSTANCE.compare(transaction1, transaction2), equalTo(0));
@@ -157,16 +162,17 @@ public class TransactionGeneratorTest {
     @Test
     public void amount_never_exceeds_specified_maximum()
     {
+	final BigDecimal minimum = new BigDecimal(1);
 	final BigDecimal maximum = new BigDecimal(10);
 
 	for (int i = 0; i < 1000; i++)
 	{
 	    // when
-	    final BigDecimal amount = generator.randomAmount(maximum);
+	    final BigDecimal amount = generator.randomAmount(minimum, maximum);
 
 	    // then
+	    assertThat(amount, greaterThanOrEqualTo(minimum));
 	    assertThat(amount, lessThanOrEqualTo(maximum));
-	    assertThat(amount, greaterThan(BigDecimal.ZERO));
 	}
     }
 }
