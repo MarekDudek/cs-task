@@ -3,11 +3,13 @@ package solution.transactions;
 import static com.google.common.collect.Lists.newArrayListWithCapacity;
 
 import java.math.BigDecimal;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
+import solution.utils.DateUtilities;
 import test.transactions.Transaction;
 
 public class TransactionGenerator {
@@ -32,6 +34,11 @@ public class TransactionGenerator {
 	for (int i = 0; i < numberOfAccounts; i++) {
 	    accounts.add(positiveLong());
 	}
+
+	final Date date = new Date();
+	final Calendar calendar = Calendar.getInstance();
+	calendar.setTime(date);
+	calendar.add(Calendar.DAY_OF_MONTH, 7);
     }
 
     public Iterator<Transaction> generateIterator(final int numberOfTransactions)
@@ -64,7 +71,7 @@ public class TransactionGenerator {
 	transaction.setDate(randomDate(generator));
 	transaction.setAccountFromId(randomAccount(generator));
 	transaction.setAccountToId(randomAccount(generator));
-	transaction.setAmount(bigDecimal(generator));
+	transaction.setAmount(bigDecimal());
 
 	return transaction;
     }
@@ -74,7 +81,7 @@ public class TransactionGenerator {
 	long integer;
 	do {
 	    integer = generator.nextLong();
-	} while (integer == 0);
+	} while (integer == 0 || integer == Integer.MIN_VALUE);
 	final long positive = Math.abs(integer);
 	return positive;
     }
@@ -84,7 +91,7 @@ public class TransactionGenerator {
 	return new Date(generator.nextLong());
     }
 
-    private BigDecimal bigDecimal(final Random generator)
+    private BigDecimal bigDecimal()
     {
 	return new BigDecimal(positiveLong());
     }
@@ -101,4 +108,18 @@ public class TransactionGenerator {
 	return accounts.get(randomIndex);
     }
 
+    public Date randomDate(final Date median, final int margin)
+    {
+	final Date lowerBound = DateUtilities.startOfDayNDaysEarlier(median, margin);
+	final long lowerMillis = lowerBound.getTime();
+
+	final Date upperBound = DateUtilities.endOfDayNDaysLater(median, margin);
+	final long upperMillis = upperBound.getTime();
+
+	final long difference = upperMillis - lowerMillis;
+
+	final long randomMillis = lowerMillis + positiveLong() % difference;
+	final Date randomDate = new Date(randomMillis);
+	return randomDate;
+    }
 }
