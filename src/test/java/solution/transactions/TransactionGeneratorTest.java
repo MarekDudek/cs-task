@@ -25,7 +25,11 @@ import test.transactions.Transaction;
 
 public class TransactionGeneratorTest {
 
+    private static final int NUMBER_OF_TRANSACTIONS = 20;
+
     private static final int SEED = 0;
+
+    private static final int NUMBER_OF_USERS = 10;
 
     private static final Date MEDIAN_DATE = new Calendar.Builder()
 	    .setDate(2014, DECEMBER, 22)
@@ -43,7 +47,7 @@ public class TransactionGeneratorTest {
     {
 	// given
 
-	generator = new TransactionGenerator(0, 10, 20, MEDIAN_DATE, DAYS_MARGIN, MAXIMUM_AMOUNT);
+	generator = new TransactionGenerator(SEED, NUMBER_OF_USERS, NUMBER_OF_TRANSACTIONS, MEDIAN_DATE, DAYS_MARGIN, MAXIMUM_AMOUNT);
     }
 
     @Test
@@ -75,7 +79,8 @@ public class TransactionGeneratorTest {
     public void values_are_random_but_alway_the_same_sequence_is_generated()
     {
 	// given
-	final TransactionGenerator secondGenerator = new TransactionGenerator(SEED, 10, 20, MEDIAN_DATE, DAYS_MARGIN, MAXIMUM_AMOUNT);
+	final TransactionGenerator secondGenerator =
+		new TransactionGenerator(SEED, NUMBER_OF_USERS, NUMBER_OF_TRANSACTIONS, MEDIAN_DATE, DAYS_MARGIN, MAXIMUM_AMOUNT);
 
 	// when
 	final Transaction transaction1 = generator.randomTransaction();
@@ -90,6 +95,28 @@ public class TransactionGeneratorTest {
 	assertThat(transaction1.getAccountFromId(), equalTo(transaction2.getAccountFromId()));
 	assertThat(transaction1.getAccountToId(), equalTo(transaction2.getAccountToId()));
 	assertThat(transaction1.getAmount(), equalTo(transaction2.getAmount()));
+    }
+
+    @Test
+    public void iterators_are_random_but_always_the_same_elements_are_generated()
+    {
+	// given
+	final int sequenceLength = 100;
+	final TransactionGenerator secondGenerator =
+		new TransactionGenerator(SEED, NUMBER_OF_USERS, NUMBER_OF_TRANSACTIONS, MEDIAN_DATE, DAYS_MARGIN, MAXIMUM_AMOUNT);
+
+	// when
+	final Iterator<Transaction> iterator1 = generator.generateIterator(sequenceLength);
+	final Iterator<Transaction> iterator2 = secondGenerator.generateIterator(sequenceLength);
+
+	for (int i = 0; i < sequenceLength; i++)
+	{
+	    final Transaction transaction1 = iterator1.next();
+	    final Transaction transaction2 = iterator2.next();
+
+	    // then
+	    assertThat(TransactionComparator.INSTANCE.compare(transaction1, transaction2), equalTo(0));
+	}
     }
 
     @Test
