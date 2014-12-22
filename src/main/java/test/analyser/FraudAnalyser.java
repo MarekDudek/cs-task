@@ -38,7 +38,7 @@ public class FraudAnalyser {
      * @param date
      *            analyze only transactions from the given day
      * 
-     * @return list off suspicious transactions
+     * @return list of suspicious transactions
      */
     public Iterator<Transaction> analyse(final Iterator<Transaction> transactions, final Date date)
     {
