@@ -24,8 +24,8 @@ public class TransactionCountFromUserAndSumTotalCollector implements StatsCollec
     private final List<Pair<Integer, BigDecimal>> thresholds =
 	    Lists.<Pair<Integer, BigDecimal>> newArrayList
 		    (
-			    Pair.with(new Integer(3), new BigDecimal(10000)),
-			    Pair.with(new Integer(5), new BigDecimal(5000))
+			    Pair.with(3, new BigDecimal(10000)),
+			    Pair.with(5, new BigDecimal(5000))
 		    );
 
     @Override

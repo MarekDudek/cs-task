@@ -33,7 +33,7 @@ public class TransactionBuilder {
     }
 
     public TransactionBuilder date(final Date date) {
-	this.date = date;
+	this.date = new Date(date.getTime());
 	return this;
     }
 
