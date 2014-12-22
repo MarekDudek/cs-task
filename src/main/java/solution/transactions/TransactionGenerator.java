@@ -64,7 +64,7 @@ public class TransactionGenerator {
 	    public Transaction next()
 	    {
 		currentIndex++;
-		return null;
+		return randomTransaction();
 	    }
 	};
     }

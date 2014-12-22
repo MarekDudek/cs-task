@@ -16,6 +16,12 @@ public class Transaction {
     private Long accountToId;
     private Date transactionDate;
 
+    @Override
+    public String toString() {
+	return "Transaction [amount=" + amount + ", userId=" + userId + ", transactionId=" + transactionId + ", accountFromId=" + accountFromId
+		+ ", accountToId=" + accountToId + ", transactionDate=" + transactionDate + "]";
+    }
+
     public BigDecimal getAmount() {
 	return amount;
     }
