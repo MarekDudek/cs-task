@@ -13,20 +13,16 @@ import org.javatuples.Pair;
 
 import test.transactions.Transaction;
 
-import com.google.common.collect.Lists;
-
 public class TransactionCountFromUserAndSumTotalCollector implements StatsCollector {
 
     private final Map<Long, Collection<Transaction>> transactionsPerUser = newHashMap();
     private final Map<Long, BigDecimal> sumPerUser = newHashMap();
+    private final List<Pair<Integer, BigDecimal>> thresholds;
 
-    @SuppressWarnings("unchecked")
-    private final List<Pair<Integer, BigDecimal>> thresholds =
-	    Lists.<Pair<Integer, BigDecimal>> newArrayList
-		    (
-			    Pair.with(3, new BigDecimal(10000)),
-			    Pair.with(5, new BigDecimal(5000))
-		    );
+    public TransactionCountFromUserAndSumTotalCollector(final List<Pair<Integer, BigDecimal>> thresholds)
+    {
+	this.thresholds = thresholds;
+    }
 
     @Override
     public void collect(final Transaction transaction)

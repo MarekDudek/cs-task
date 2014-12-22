@@ -1,12 +1,15 @@
 package solution.collectors;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertThat;
 import static solution.TransactionBuilder.transaction;
 
 import java.math.BigDecimal;
 import java.util.Collection;
+import java.util.List;
 
+import org.javatuples.Pair;
 import org.junit.Test;
 
 import test.transactions.Transaction;
@@ -81,7 +84,13 @@ public class TransactionCountFromUserAndSumTotalCollectorTest {
     public void test()
     {
 	// given
-	final StatsCollector collector = new TransactionCountFromUserAndSumTotalCollector();
+	@SuppressWarnings("unchecked")
+	final List<Pair<Integer, BigDecimal>> thresholds = newArrayList
+		(
+			Pair.with(3, new BigDecimal(10000)),
+			Pair.with(5, new BigDecimal(5000))
+		);
+	final StatsCollector collector = new TransactionCountFromUserAndSumTotalCollector(thresholds);
 
 	// when
 	collector.collect(TRANSACTION_1);
