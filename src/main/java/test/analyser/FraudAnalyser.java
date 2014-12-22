@@ -30,7 +30,7 @@ public class FraudAnalyser {
      * @param list
      *            of transactions to be checked
      * @param date
-     *            - analyze only transactions from the given day
+     *            analyze only transactions from the given day
      * 
      * @return list off suspicious transactions
      */
