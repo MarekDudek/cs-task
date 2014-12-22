@@ -15,8 +15,8 @@ Requirements
   *Further conditions may be added.* 
 
 3. Transaction may also be evaluated as suspicious based on criteria that span the whole streak:
-  1. Number of transactions **to** the same account exceeds configured threshold
-  2. Number of transactions **from** the same account exceeds configured threshold
+  1. Number of transactions **from** the same account exceeds configured threshold
+  2. Number of transactions **to** the same account **by** the same user exceeds configured threshold
   3. Number of transactions by the same user **and** their sum total **both** exceed **any** of configured thresholds
     
   *Conditions may be changed*

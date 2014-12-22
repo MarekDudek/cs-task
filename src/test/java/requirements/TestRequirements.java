@@ -7,7 +7,7 @@ import java.util.List;
 
 import test.transactions.Transaction;
 
-public class TestRequirements {
+public final class TestRequirements {
 
     public static final long WHITELISTED_USER_1 = 101L;
     public static final long WHITELISTED_USER_2 = 606L;
