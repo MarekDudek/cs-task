@@ -20,13 +20,15 @@ public class TransactionGenerator {
     private final List<Long> accounts;
     private final Date medianDate;
     private final int daysMargin;
+    private final BigDecimal maximumAmount;
 
     public TransactionGenerator(
 	    final long seed,
 	    final int numberOfUsers,
 	    final int numberOfAccounts,
 	    final Date medianDate,
-	    final int daysMargin)
+	    final int daysMargin,
+	    final BigDecimal maximumAmount)
     {
 	generator = new Random(seed);
 
@@ -40,8 +42,10 @@ public class TransactionGenerator {
 	    accounts.add(positiveLong());
 	}
 
-	this.medianDate = medianDate;
+	this.medianDate = new Date(medianDate.getTime());
 	this.daysMargin = daysMargin;
+
+	this.maximumAmount = maximumAmount;
     }
 
     public Iterator<Transaction> generateIterator(final int numberOfTransactions)
@@ -74,7 +78,7 @@ public class TransactionGenerator {
 	transaction.setDate(randomDate(medianDate, daysMargin));
 	transaction.setAccountFromId(randomAccount(generator));
 	transaction.setAccountToId(randomAccount(generator));
-	transaction.setAmount(positiveBigDecimal());
+	transaction.setAmount(randomAmount(maximumAmount));
 
 	return transaction;
     }
@@ -92,7 +96,17 @@ public class TransactionGenerator {
 
 	final long randomMillis = lowerMillis + positiveLong() % difference;
 	final Date randomDate = new Date(randomMillis);
+
 	return randomDate;
+    }
+
+    @VisibleForTesting
+    BigDecimal randomAmount(final BigDecimal maximum)
+    {
+	final BigDecimal positive = positiveBigDecimal();
+	final BigDecimal nonNegativeBelowMaximum = positive.remainder(maximum);
+
+	return nonNegativeBelowMaximum.add(BigDecimal.ONE);
     }
 
     private long positiveLong()

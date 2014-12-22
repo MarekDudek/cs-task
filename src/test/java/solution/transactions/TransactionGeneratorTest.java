@@ -7,11 +7,13 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.lessThan;
+import static org.hamcrest.Matchers.lessThanOrEqualTo;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertThat;
 
+import java.math.BigDecimal;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Iterator;
@@ -32,6 +34,8 @@ public class TransactionGeneratorTest {
 	    .build().getTime();
     private static final int DAYS_MARGIN = 1;
 
+    private static final BigDecimal MAXIMUM_AMOUNT = new BigDecimal(100);
+
     private TransactionGenerator generator;
 
     @Before
@@ -39,7 +43,7 @@ public class TransactionGeneratorTest {
     {
 	// given
 
-	generator = new TransactionGenerator(0, 10, 20, MEDIAN_DATE, DAYS_MARGIN);
+	generator = new TransactionGenerator(0, 10, 20, MEDIAN_DATE, DAYS_MARGIN, MAXIMUM_AMOUNT);
     }
 
     @Test
@@ -71,7 +75,7 @@ public class TransactionGeneratorTest {
     public void values_are_random_but_alway_the_same_sequence_is_generated()
     {
 	// given
-	final TransactionGenerator secondGenerator = new TransactionGenerator(SEED, 10, 20, MEDIAN_DATE, DAYS_MARGIN);
+	final TransactionGenerator secondGenerator = new TransactionGenerator(SEED, 10, 20, MEDIAN_DATE, DAYS_MARGIN, MAXIMUM_AMOUNT);
 
 	// when
 	final Transaction transaction1 = generator.randomTransaction();
@@ -120,6 +124,22 @@ public class TransactionGeneratorTest {
 	    // then
 	    assertThat(date, greaterThan(lowerBound));
 	    assertThat(date, lessThan(upperBound));
+	}
+    }
+
+    @Test
+    public void amount_never_exceeds_specified_maximum()
+    {
+	final BigDecimal maximum = new BigDecimal(10);
+
+	for (int i = 0; i < 1000; i++)
+	{
+	    // when
+	    final BigDecimal amount = generator.randomAmount(maximum);
+
+	    // then
+	    assertThat(amount, lessThanOrEqualTo(maximum));
+	    assertThat(amount, greaterThan(BigDecimal.ZERO));
 	}
     }
 }

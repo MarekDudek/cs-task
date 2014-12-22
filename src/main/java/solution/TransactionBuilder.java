@@ -1,5 +1,7 @@
 package solution;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import java.math.BigDecimal;
 import java.util.Date;
 
@@ -48,6 +50,7 @@ public class TransactionBuilder {
     }
 
     public TransactionBuilder amount(final BigDecimal amount) {
+	checkArgument(amount.compareTo(BigDecimal.ZERO) > 0);
 	this.amount = amount;
 	return this;
     }
