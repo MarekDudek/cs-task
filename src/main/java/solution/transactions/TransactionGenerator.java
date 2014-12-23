@@ -17,46 +17,37 @@ import com.google.common.annotations.VisibleForTesting;
 public class TransactionGenerator {
 
     private final Random generator;
-    private final int minimumId;
-    private final int maximumId;
+    private final int minId;
+    private final int maxId;
     private final List<Long> users;
     private final List<Long> accounts;
     private final Date medianDate;
     private final int daysMargin;
-    private final BigDecimal minimumAmount;
-    private final BigDecimal maximumAmount;
+    private final BigDecimal minAmount;
+    private final BigDecimal maxAmount;
 
-    public TransactionGenerator(
-	    final long seed,
-	    final int minimumId,
-	    final int maximumId,
-	    final int numberOfUsers,
-	    final int numberOfAccounts,
-	    final Date medianDate,
-	    final int daysMargin,
-	    final BigDecimal minimumAmount,
-	    final BigDecimal maximumAmount)
+    public TransactionGenerator(final TransactionGeneratorConfig config)
     {
-	generator = new Random(seed);
+	generator = new Random(config.seed);
 
-	this.minimumId = minimumId;
-	this.maximumId = maximumId;
+	minId = config.minId;
+	maxId = config.maxId;
 
-	users = newArrayListWithCapacity(numberOfUsers);
-	for (int i = 0; i < numberOfUsers; i++) {
-	    users.add(randomBoundedLong(minimumId, maximumId));
+	users = newArrayListWithCapacity(config.userCount);
+	for (int i = 0; i < config.userCount; i++) {
+	    users.add(randomBoundedLong(config.minId, config.maxId));
 	}
 
-	accounts = newArrayListWithCapacity(numberOfAccounts);
-	for (int i = 0; i < numberOfAccounts; i++) {
-	    accounts.add(randomBoundedLong(minimumId, maximumId));
+	accounts = newArrayListWithCapacity(config.accountCount);
+	for (int i = 0; i < config.accountCount; i++) {
+	    accounts.add(randomBoundedLong(config.minId, config.maxId));
 	}
 
-	this.medianDate = new Date(medianDate.getTime());
-	this.daysMargin = daysMargin;
+	medianDate = new Date(config.medianDate.getTime());
+	daysMargin = config.daysMargin;
 
-	this.minimumAmount = minimumAmount;
-	this.maximumAmount = maximumAmount;
+	minAmount = config.minAmount;
+	maxAmount = config.maxAmount;
     }
 
     public Iterator<Transaction> generateIterator(final int numberOfTransactions)
@@ -84,12 +75,12 @@ public class TransactionGenerator {
     {
 	final Transaction transaction = new Transaction();
 
-	transaction.setTransactionId(randomBoundedLong(minimumId, maximumId));
+	transaction.setTransactionId(randomBoundedLong(minId, maxId));
 	transaction.setUserId(randomUser(generator));
 	transaction.setDate(randomDate(medianDate, daysMargin));
 	transaction.setAccountFromId(randomAccount(generator));
 	transaction.setAccountToId(randomAccount(generator));
-	transaction.setAmount(randomAmount(minimumAmount, maximumAmount));
+	transaction.setAmount(randomAmount(minAmount, maxAmount));
 
 	return transaction;
     }

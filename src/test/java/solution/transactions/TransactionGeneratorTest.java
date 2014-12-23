@@ -31,8 +31,8 @@ public class TransactionGeneratorTest {
     private static final int MIN_ID = 1000;
     private static final int MAX_ID = 9999;
 
-    private static final int TRANSACTIONS_COUNT = 20;
-    private static final int USERS_COUNT = 10;
+    private static final int USER_COUNT = 10;
+    private static final int ACCOUNT_COUNT = 20;
 
     private static final Date MEDIAN_DATE = new Calendar.Builder()
 	    .setDate(2014, DECEMBER, 22)
@@ -44,14 +44,16 @@ public class TransactionGeneratorTest {
     private static final BigDecimal MIN_AMOUNT = new BigDecimal(100);
     private static final BigDecimal MAX_AMOUNT = new BigDecimal(999);
 
+    private static final TransactionGeneratorConfig CONFIG =
+	    new TransactionGeneratorConfig(SEED, MIN_ID, MAX_ID, USER_COUNT, ACCOUNT_COUNT, MEDIAN_DATE, DAYS_MARGIN, MIN_AMOUNT, MAX_AMOUNT);
+
     private TransactionGenerator generator;
 
     @Before
     public void setup()
     {
 	// given
-	generator =
-		new TransactionGenerator(SEED, MIN_ID, MAX_ID, USERS_COUNT, TRANSACTIONS_COUNT, MEDIAN_DATE, DAYS_MARGIN, MIN_AMOUNT, MAX_AMOUNT);
+	generator = new TransactionGenerator(CONFIG);
     }
 
     @Test
@@ -83,8 +85,7 @@ public class TransactionGeneratorTest {
     public void values_are_random_but_alway_the_same_sequence_is_generated()
     {
 	// given
-	final TransactionGenerator secondGenerator =
-		new TransactionGenerator(SEED, MIN_ID, MAX_ID, USERS_COUNT, TRANSACTIONS_COUNT, MEDIAN_DATE, DAYS_MARGIN, MIN_AMOUNT, MAX_AMOUNT);
+	final TransactionGenerator secondGenerator = new TransactionGenerator(CONFIG);
 
 	// when
 	final Transaction transaction1 = generator.randomTransaction();
@@ -105,10 +106,9 @@ public class TransactionGeneratorTest {
     public void iterators_are_random_but_always_the_same_elements_are_generated()
     {
 	// given
-	final TransactionGenerator secondGenerator =
-		new TransactionGenerator(SEED, MIN_ID, MAX_ID, USERS_COUNT, TRANSACTIONS_COUNT, MEDIAN_DATE, DAYS_MARGIN, MIN_AMOUNT, MAX_AMOUNT);
-
+	final TransactionGenerator secondGenerator = new TransactionGenerator(CONFIG);
 	final int sequenceLength = 1000;
+
 	// when
 	final Iterator<Transaction> iterator1 = generator.generateIterator(sequenceLength);
 	final Iterator<Transaction> iterator2 = secondGenerator.generateIterator(sequenceLength);
@@ -117,7 +117,6 @@ public class TransactionGeneratorTest {
 	{
 	    final Transaction transaction1 = iterator1.next();
 	    final Transaction transaction2 = iterator2.next();
-	    // System.out.println(transaction1);
 
 	    // then
 	    assertThat(TransactionComparator.INSTANCE.compare(transaction1, transaction2), equalTo(0));
