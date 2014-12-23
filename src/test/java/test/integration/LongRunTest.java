@@ -93,11 +93,6 @@ public class LongRunTest {
 	final Iterator<Transaction> suspicious = analyser.analyse(transactions, DUE_DAY);
 
 	// then
-	final List<Transaction> list = newArrayList(suspicious);
-	for (final Transaction transaction : list) {
-	    System.out.println(transaction);
-	}
-	System.out.println(list.size());
-	assertThat(list, hasSize(26));
+	assertThat(newArrayList(suspicious), hasSize(26));
     }
 }

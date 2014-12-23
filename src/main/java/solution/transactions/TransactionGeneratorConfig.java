@@ -35,7 +35,7 @@ public final class TransactionGeneratorConfig {
 	this.maxId = maxId;
 	this.userCount = userCount;
 	this.accountCount = accountCount;
-	this.medianDate = medianDate;
+	this.medianDate = new Date(medianDate.getTime());
 	this.daysMargin = daysMargin;
 	this.minAmount = minAmount;
 	this.maxAmount = maxAmount;
