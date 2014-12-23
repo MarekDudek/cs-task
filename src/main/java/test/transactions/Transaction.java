@@ -3,6 +3,8 @@ package test.transactions;
 import java.math.BigDecimal;
 import java.util.Date;
 
+import com.google.common.base.MoreObjects;
+
 /**
  * This is single transaction. Imagine that This class is part of another
  * system.
@@ -18,8 +20,14 @@ public class Transaction {
 
     @Override
     public String toString() {
-	return "Transaction [amount=" + amount + ", userId=" + userId + ", transactionId=" + transactionId + ", accountFromId=" + accountFromId
-		+ ", accountToId=" + accountToId + ", transactionDate=" + transactionDate + "]";
+	return MoreObjects.toStringHelper(this)
+		.add("ID", transactionId)
+		.add("user", userId)
+		.add("date", transactionDate)
+		.add("from account", accountFromId)
+		.add("to account", accountToId)
+		.add("amount", amount)
+		.toString();
     }
 
     public BigDecimal getAmount() {
