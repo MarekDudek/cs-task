@@ -136,8 +136,8 @@ public class TransactionGenerator {
 	long integer;
 	do {
 	    integer = generator.nextLong();
-	} while (integer == 0 || integer == Integer.MIN_VALUE);
-	assert integer != Integer.MIN_VALUE;
+	} while (integer == 0 || integer == Long.MIN_VALUE);
+	assert integer != Long.MIN_VALUE;
 	final long positive = Math.abs(integer);
 	return positive;
     }
