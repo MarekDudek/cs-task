@@ -60,11 +60,14 @@ public class TransactionBuilder {
 	final Transaction transaction = new Transaction();
 
 	transaction.setTransactionId(transactionId);
-	transaction.setUserId(userId);
-	transaction.setDate(date);
 	transaction.setAccountToId(accountToId);
 	transaction.setAccountFromId(accountFromId);
 	transaction.setAmount(amount);
+	transaction.setUserId(userId);
+
+	if (date != null) {
+	    transaction.setDate(date);
+	}
 
 	return transaction;
     }

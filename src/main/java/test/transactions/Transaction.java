@@ -43,7 +43,7 @@ public class Transaction {
     }
 
     public Date getDate() {
-	return transactionDate;
+	return new Date(transactionDate.getTime());
     }
 
     public void setAmount(BigDecimal amount) {
@@ -67,6 +67,6 @@ public class Transaction {
     }
 
     public void setDate(Date date) {
-	this.transactionDate = date;
+	this.transactionDate = new Date(date.getTime());
     }
 }
