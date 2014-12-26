@@ -35,18 +35,18 @@ import solution.transactions.TransactionGeneratorConfig;
 import test.analyser.FraudAnalyser;
 import test.transactions.Transaction;
 
-public class LongRunTest {
+public class IntegrationTest {
 
     private static final int SEED = 0;
 
     private static final int MIN_ID = 1000;
     private static final int MAX_ID = 9999;
 
-    private static final int USER_COUNT = 4;
+    private static final int USER_COUNT = 7;
     private static final int ACCOUNT_COUNT = 5;
 
-    private static final int WHITELISTED_COUNT = 1;
-    private static final int BLACKLISTED_COUNT = 1;
+    private static final int WHITELISTED_COUNT = 3;
+    private static final int BLACKLISTED_COUNT = 2;
 
     private static final Date DUE_DAY = new Calendar.Builder()
 	    .setDate(2014, DECEMBER, 22)
@@ -92,8 +92,8 @@ public class LongRunTest {
 	// given
 	final TransactionGenerator generator = new TransactionGenerator(CONFIG);
 
-	final List<Long> whitelisted = generator.getWhitelisted(WHITELISTED_COUNT);
-	final List<Long> blacklisted = generator.getBlacklisted(BLACKLISTED_COUNT);
+	final List<Long> whitelisted = generator.chooseWhitelisted(WHITELISTED_COUNT);
+	final List<Long> blacklisted = generator.chooseBlacklisted(BLACKLISTED_COUNT);
 
 	final Predicate<Transaction> skipAnalysis = belongsTo(WHITELISTED_USERS).or(sameDate(DUE_DAY).negate());
 	final Predicate<Transaction> suspectIndividually = belongsTo(BLACKLISTED_USERS);
@@ -111,6 +111,6 @@ public class LongRunTest {
 	final Set<Long> common = intersection(newHashSet(whitelisted), newHashSet(blacklisted));
 	assertThat(common, is(empty()));
 
-	assertThat(newArrayList(suspicious), hasSize(26));
+	assertThat(newArrayList(suspicious), hasSize(28));
     }
 }

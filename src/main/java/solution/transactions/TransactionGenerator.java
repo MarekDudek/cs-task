@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Lists.newArrayListWithCapacity;
 
 import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -50,17 +51,19 @@ public class TransactionGenerator {
 	maxAmount = config.maxAmount;
     }
 
-    public List<Long> getWhitelisted(final int count)
+    public List<Long> chooseWhitelisted(final int count)
     {
-	return users.subList(0, count);
+	final List<Long> whitelisted = users.subList(0, count);
+	return Collections.unmodifiableList(whitelisted);
     }
 
-    public List<Long> getBlacklisted(final int count)
+    public List<Long> chooseBlacklisted(final int count)
     {
 	final int last = users.size();
 	final int first = last - count;
 
-	return users.subList(first, last);
+	final List<Long> blacklisted = users.subList(first, last);
+	return Collections.unmodifiableList(blacklisted);
     }
 
     public Iterator<Transaction> generateIterator(final int numberOfTransactions)
