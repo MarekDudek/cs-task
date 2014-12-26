@@ -1,9 +1,13 @@
 package test.integration;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.collect.Sets.intersection;
+import static com.google.common.collect.Sets.newHashSet;
 import static java.util.Calendar.DECEMBER;
 import static java.util.Calendar.MILLISECOND;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static requirements.TestRequirements.BLACKLISTED_USERS;
 import static requirements.TestRequirements.WHITELISTED_USERS;
@@ -15,6 +19,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Predicate;
 
 import org.javatuples.Pair;
@@ -40,6 +45,9 @@ public class LongRunTest {
     private static final int USER_COUNT = 4;
     private static final int ACCOUNT_COUNT = 5;
 
+    private static final int WHITELISTED_COUNT = 1;
+    private static final int BLACKLISTED_COUNT = 1;
+
     private static final Date DUE_DAY = new Calendar.Builder()
 	    .setDate(2014, DECEMBER, 22)
 	    .setTimeOfDay(12, 33, 58)
@@ -55,9 +63,6 @@ public class LongRunTest {
 	    new TransactionGeneratorConfig(SEED, MIN_ID, MAX_ID, USER_COUNT, ACCOUNT_COUNT, DUE_DAY, DAYS_MARGIN, MIN_AMOUNT, MAX_AMOUNT);
 
     // Fraud analyzer components
-
-    private static final Predicate<Transaction> SKIP_ANALYSIS = belongsTo(WHITELISTED_USERS).or(sameDate(DUE_DAY).negate());
-    private static final Predicate<Transaction> SUSPECT_INDIVIDUALLY = belongsTo(BLACKLISTED_USERS);
 
     // Statistics collectors
 
@@ -86,13 +91,26 @@ public class LongRunTest {
     {
 	// given
 	final TransactionGenerator generator = new TransactionGenerator(CONFIG);
-	final FraudAnalyser analyser = new FraudAnalyser(SKIP_ANALYSIS, SUSPECT_INDIVIDUALLY, COLLECTOR);
+
+	final List<Long> whitelisted = generator.getWhitelisted(WHITELISTED_COUNT);
+	final List<Long> blacklisted = generator.getBlacklisted(BLACKLISTED_COUNT);
+
+	final Predicate<Transaction> skipAnalysis = belongsTo(WHITELISTED_USERS).or(sameDate(DUE_DAY).negate());
+	final Predicate<Transaction> suspectIndividually = belongsTo(BLACKLISTED_USERS);
+
+	final FraudAnalyser analyser = new FraudAnalyser(skipAnalysis, suspectIndividually, COLLECTOR);
 
 	// when
 	final Iterator<Transaction> transactions = generator.generateIterator(NUMBER_OF_TRANSACTIONS);
 	final Iterator<Transaction> suspicious = analyser.analyse(transactions, DUE_DAY);
 
 	// then
+	assertThat(whitelisted, hasSize(WHITELISTED_COUNT));
+	assertThat(blacklisted, hasSize(BLACKLISTED_COUNT));
+
+	final Set<Long> common = intersection(newHashSet(whitelisted), newHashSet(blacklisted));
+	assertThat(common, is(empty()));
+
 	assertThat(newArrayList(suspicious), hasSize(26));
     }
 }

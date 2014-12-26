@@ -50,6 +50,19 @@ public class TransactionGenerator {
 	maxAmount = config.maxAmount;
     }
 
+    public List<Long> getWhitelisted(final int count)
+    {
+	return users.subList(0, count);
+    }
+
+    public List<Long> getBlacklisted(final int count)
+    {
+	final int last = users.size();
+	final int first = last - count;
+
+	return users.subList(first, last);
+    }
+
     public Iterator<Transaction> generateIterator(final int numberOfTransactions)
     {
 	return new Iterator<Transaction>() {
