@@ -9,8 +9,6 @@ import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
-import static requirements.TestRequirements.BLACKLISTED_USERS;
-import static requirements.TestRequirements.WHITELISTED_USERS;
 import static solution.PredicateFactory.belongsTo;
 import static solution.PredicateFactory.sameDate;
 
@@ -35,18 +33,18 @@ import solution.transactions.TransactionGeneratorConfig;
 import test.analyser.FraudAnalyser;
 import test.transactions.Transaction;
 
-public class IntegrationTest {
+public class PerformanceTest {
 
     private static final int SEED = 0;
 
     private static final int MIN_ID = 1000;
     private static final int MAX_ID = 9999;
 
-    private static final int USER_COUNT = 7;
-    private static final int ACCOUNT_COUNT = 5;
+    private static final int USER_COUNT = 100;
+    private static final int ACCOUNT_COUNT = 100;
 
-    private static final int WHITELISTED_COUNT = 3;
-    private static final int BLACKLISTED_COUNT = 2;
+    private static final int WHITELISTED_COUNT = 10;
+    private static final int BLACKLISTED_COUNT = 10;
 
     private static final Date DUE_DAY = new Calendar.Builder()
 	    .setDate(2014, DECEMBER, 22)
@@ -62,29 +60,32 @@ public class IntegrationTest {
     private static final TransactionGeneratorConfig CONFIG =
 	    new TransactionGeneratorConfig(SEED, MIN_ID, MAX_ID, USER_COUNT, ACCOUNT_COUNT, DUE_DAY, DAYS_MARGIN, MIN_AMOUNT, MAX_AMOUNT);
 
-    // Fraud analyzer components
-
     // Statistics collectors
 
-    private static final int MAX_ALLOWED_FROM_ACCOUNT = 5;
+    private static final int MAX_ALLOWED_FROM_ACCOUNT = 6000;
     private static final StatsCollector FROM_ACCOUNT = new TransactionCountFromAccoutCollector(MAX_ALLOWED_FROM_ACCOUNT);
 
-    private static final int MAX_ALLOWED_TO_ACCOUNT_BY_USER = 4;
+    private static final int MAX_ALLOWED_TO_ACCOUNT_BY_USER = 140;
     private static final StatsCollector TO_ACCOUNT_BY_USER = new TransactionCountToAccountByUserCollector(MAX_ALLOWED_TO_ACCOUNT_BY_USER);
 
     @SuppressWarnings("unchecked")
     private static final List<Pair<Integer, BigDecimal>> THRESHOLDS = newArrayList
 	    (
-		    Pair.with(2, new BigDecimal(6000)),
-		    Pair.with(3, new BigDecimal(3000))
+		    Pair.with(1_000_000, new BigDecimal(10_000_000)),
+		    Pair.with(6699, new BigDecimal(3_685_272))
 	    );
     private static final StatsCollector FROM_USER_AND_SUM_TOTAL = new TransactionCountFromUserAndSumTotalCollector(THRESHOLDS);
 
     /** Collectors configuration. */
-    private static final StatsCollector COLLECTOR = new MultiStatCollector(FROM_ACCOUNT, TO_ACCOUNT_BY_USER, FROM_USER_AND_SUM_TOTAL);
+    private static final StatsCollector COLLECTOR = new MultiStatCollector
+	    (
+		    FROM_ACCOUNT,
+		    TO_ACCOUNT_BY_USER,
+		    FROM_USER_AND_SUM_TOTAL
+	    );
 
     /** Number of transactions to generate. */
-    private static final int NUMBER_OF_TRANSACTIONS = 100;
+    private static final int NUMBER_OF_TRANSACTIONS = 1_000_000;
 
     @Test
     public void test()
@@ -93,10 +94,10 @@ public class IntegrationTest {
 	final TransactionGenerator generator = new TransactionGenerator(CONFIG);
 
 	final List<Long> whitelisted = generator.chooseWhitelisted(WHITELISTED_COUNT);
-	final List<Long> blacklisted = generator.chooseBlacklisted(BLACKLISTED_COUNT);
+	final Predicate<Transaction> skipAnalysis = belongsTo(whitelisted).or(sameDate(DUE_DAY).negate());
 
-	final Predicate<Transaction> skipAnalysis = belongsTo(WHITELISTED_USERS).or(sameDate(DUE_DAY).negate());
-	final Predicate<Transaction> suspectIndividually = belongsTo(BLACKLISTED_USERS);
+	final List<Long> blacklisted = generator.chooseBlacklisted(BLACKLISTED_COUNT);
+	final Predicate<Transaction> suspectIndividually = belongsTo(blacklisted);
 
 	final FraudAnalyser analyser = new FraudAnalyser(skipAnalysis, suspectIndividually, COLLECTOR);
 
@@ -111,6 +112,6 @@ public class IntegrationTest {
 	final Set<Long> common = intersection(newHashSet(whitelisted), newHashSet(blacklisted));
 	assertThat(common, is(empty()));
 
-	assertThat(newArrayList(suspicious), hasSize(28));
+	assertThat(newArrayList(suspicious), hasSize(45287));
     }
 }
