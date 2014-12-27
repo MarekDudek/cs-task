@@ -1,6 +1,10 @@
 package test.analyser;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.collect.Lists.newLinkedList;
+
 import java.util.Date;
+import java.util.Deque;
 import java.util.Iterator;
 import java.util.function.Predicate;
 
@@ -9,11 +13,12 @@ import test.transactions.Transaction;
 
 public class IteratingFraudAnalyser extends FraudAnalyser {
 
-    private Predicate<Transaction> skipAnalysis;
+    private final Predicate<Transaction> skipAnalysis;
+    private final Deque<Transaction> suspicious = newLinkedList();
 
     public IteratingFraudAnalyser(final Predicate<Transaction> skipAnalysis)
     {
-	this.skipAnalysis = skipAnalysis;
+	this.skipAnalysis = checkNotNull(skipAnalysis);
     }
 
     @Override
@@ -24,13 +29,18 @@ public class IteratingFraudAnalyser extends FraudAnalyser {
 	    @Override
 	    public boolean hasNext()
 	    {
-		return super.hasNext();
+		final boolean hasNext = super.hasNext();
+		if (hasNext) {
+		    final Transaction next = super.next();
+		    suspicious.add(next);
+		}
+		return hasNext;
 	    }
 
 	    @Override
 	    public Transaction next()
 	    {
-		return super.next();
+		return suspicious.pop();
 	    }
 	};
     }
