@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Deque;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
 
@@ -23,6 +24,7 @@ public class IteratingFraudAnalyser extends FraudAnalyser {
     private final StatsCollector collector;
 
     private final Deque<Transaction> cache = newLinkedList();
+    private final List<Transaction> suspicious = newLinkedList();
 
     private boolean inputExhausted = false;
 
@@ -56,12 +58,14 @@ public class IteratingFraudAnalyser extends FraudAnalyser {
 		if (optional.isPresent()) {
 		    final Transaction transaction = optional.get();
 		    cache.add(transaction);
+		    suspicious.add(transaction);
 		} else {
 		    inputExhausted = true;
 		}
 
 		if (inputExhausted) {
 		    final Collection<Transaction> suspiciousBasedOnStats = collector.suspicious();
+		    suspiciousBasedOnStats.removeAll(suspicious);
 		    cache.addAll(suspiciousBasedOnStats);
 		}
 
@@ -90,6 +94,7 @@ public class IteratingFraudAnalyser extends FraudAnalyser {
 		    if (candidate == null) {
 			return Optional.empty();
 		    }
+		    collector.collect(candidate);
 		    if (suspectIndividually.test(candidate)) {
 			return Optional.of(candidate);
 		    }

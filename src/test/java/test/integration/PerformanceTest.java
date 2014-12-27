@@ -65,26 +65,15 @@ public class PerformanceTest {
     // Statistics collectors
 
     private static final int MAX_ALLOWED_FROM_ACCOUNT = 6000;
-    private static final StatsCollector FROM_ACCOUNT = new TransactionCountFromAccoutCollector(MAX_ALLOWED_FROM_ACCOUNT);
-
     private static final int MAX_ALLOWED_TO_ACCOUNT_BY_USER = 140;
-    private static final StatsCollector TO_ACCOUNT_BY_USER = new TransactionCountToAccountByUserCollector(MAX_ALLOWED_TO_ACCOUNT_BY_USER);
-
     @SuppressWarnings("unchecked")
     private static final List<Pair<Integer, BigDecimal>> THRESHOLDS = newArrayList
 	    (
 		    Pair.with(1_000_000, new BigDecimal(10_000_000)),
 		    Pair.with(6699, new BigDecimal(3_685_272))
 	    );
-    private static final StatsCollector FROM_USER_AND_SUM_TOTAL = new TransactionCountFromUserAndSumTotalCollector(THRESHOLDS);
 
     /** Collectors configuration. */
-    private static final StatsCollector COLLECTOR = new MultiStatCollector
-	    (
-		    FROM_ACCOUNT,
-		    TO_ACCOUNT_BY_USER,
-		    FROM_USER_AND_SUM_TOTAL
-	    );
 
     /** Number of transactions to generate. */
     private static final int NUMBER_OF_TRANSACTIONS = 1_000_000;
@@ -101,7 +90,14 @@ public class PerformanceTest {
 	final List<Long> blacklisted = generator.chooseBlacklisted(BLACKLISTED_COUNT);
 	final Predicate<Transaction> suspectIndividually = belongsTo(blacklisted);
 
-	final FraudAnalyser analyser = new SimpleFraudAnalyser(skipAnalysis, suspectIndividually, COLLECTOR);
+	final StatsCollector collector = new MultiStatCollector
+		(
+			new TransactionCountFromAccoutCollector(MAX_ALLOWED_FROM_ACCOUNT),
+			new TransactionCountToAccountByUserCollector(MAX_ALLOWED_TO_ACCOUNT_BY_USER),
+			new TransactionCountFromUserAndSumTotalCollector(THRESHOLDS)
+		);
+
+	final FraudAnalyser analyser = new SimpleFraudAnalyser(skipAnalysis, suspectIndividually, collector);
 
 	// when
 	final Iterator<Transaction> transactions = generator.generateIterator(NUMBER_OF_TRANSACTIONS);
@@ -129,7 +125,14 @@ public class PerformanceTest {
 	final List<Long> blacklisted = generator.chooseBlacklisted(BLACKLISTED_COUNT);
 	final Predicate<Transaction> suspectIndividually = belongsTo(blacklisted);
 
-	final FraudAnalyser analyser = new IteratingFraudAnalyser(skipAnalysis, suspectIndividually, COLLECTOR);
+	final StatsCollector collector = new MultiStatCollector
+		(
+			new TransactionCountFromAccoutCollector(MAX_ALLOWED_FROM_ACCOUNT),
+			new TransactionCountToAccountByUserCollector(MAX_ALLOWED_TO_ACCOUNT_BY_USER),
+			new TransactionCountFromUserAndSumTotalCollector(THRESHOLDS)
+		);
+
+	final FraudAnalyser analyser = new IteratingFraudAnalyser(skipAnalysis, suspectIndividually, collector);
 
 	// when
 	final Iterator<Transaction> transactions = generator.generateIterator(NUMBER_OF_TRANSACTIONS);
