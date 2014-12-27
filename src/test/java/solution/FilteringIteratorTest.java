@@ -12,7 +12,6 @@ import java.util.Set;
 import java.util.function.Predicate;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import solution.iterator.FilteringIterator;
@@ -63,7 +62,6 @@ public class FilteringIteratorTest {
 	assertThat(iterator.hasNext(), is(false));
     }
 
-    @Ignore
     @Test
     public void iteration_without_checking_if_next_exists()
     {
@@ -76,5 +74,7 @@ public class FilteringIteratorTest {
 	assertThat(iterator.next(), is(equalTo(6)));
 	assertThat(iterator.next(), is(equalTo(8)));
 	assertThat(iterator.next(), is(equalTo(10)));
+
+	assertThat(iterator.hasNext(), is(false));
     }
 }

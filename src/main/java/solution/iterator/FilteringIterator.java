@@ -11,6 +11,7 @@ public class FilteringIterator<T> implements Iterator<T> {
     private final Predicate<T> predicate;
 
     private T next;
+    private boolean consumed = true;
 
     public FilteringIterator(final Iterator<T> unfiltered, final Predicate<T> predicate)
     {
@@ -21,16 +22,22 @@ public class FilteringIterator<T> implements Iterator<T> {
     @Override
     public boolean hasNext()
     {
-	next = findNext();
-	if (next == null) {
-	    return false;
-	} else {
-	    return true;
+	if (consumed) {
+	    next = findNext();
+	    consumed = false;
 	}
+
+	return next != null;
     }
 
     @Override
-    public T next() {
+    public T next()
+    {
+	if (consumed) {
+	    next = findNext();
+	}
+	consumed = true;
+
 	return next;
     }
 
