@@ -136,6 +136,6 @@ public class PerformanceTest {
 	final Iterator<Transaction> suspicious = analyser.analyse(transactions, DUE_DAY);
 
 	// then
-	assertThat(newArrayList(suspicious), hasSize(33339));
+	assertThat(newArrayList(suspicious), hasSize(45287));
     }
 }
