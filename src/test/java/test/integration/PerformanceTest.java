@@ -31,6 +31,7 @@ import solution.collectors.TransactionCountToAccountByUserCollector;
 import solution.transactions.TransactionGenerator;
 import solution.transactions.TransactionGeneratorConfig;
 import test.analyser.FraudAnalyser;
+import test.analyser.SimpleFraudAnalyser;
 import test.transactions.Transaction;
 
 public class PerformanceTest {
@@ -99,7 +100,7 @@ public class PerformanceTest {
 	final List<Long> blacklisted = generator.chooseBlacklisted(BLACKLISTED_COUNT);
 	final Predicate<Transaction> suspectIndividually = belongsTo(blacklisted);
 
-	final FraudAnalyser analyser = new FraudAnalyser(skipAnalysis, suspectIndividually, COLLECTOR);
+	final FraudAnalyser analyser = new SimpleFraudAnalyser(skipAnalysis, suspectIndividually, COLLECTOR);
 
 	// when
 	final Iterator<Transaction> transactions = generator.generateIterator(NUMBER_OF_TRANSACTIONS);

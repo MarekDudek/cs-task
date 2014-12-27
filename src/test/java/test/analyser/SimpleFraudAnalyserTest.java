@@ -26,7 +26,7 @@ import org.junit.Test;
 import solution.collectors.StatsCollector;
 import test.transactions.Transaction;
 
-public class FraudAnalyserTest {
+public class SimpleFraudAnalyserTest {
 
     /** System under test. */
     private FraudAnalyser analyser;
@@ -59,7 +59,7 @@ public class FraudAnalyserTest {
 	final StatsCollector nullCollector = new StatsCollector() {
 	};
 
-	analyser = new FraudAnalyser(SKIP_ANALYSIS, SUSPECT_INDIVIDUALLY, nullCollector);
+	analyser = new SimpleFraudAnalyser(SKIP_ANALYSIS, SUSPECT_INDIVIDUALLY, nullCollector);
 
 	final List<Transaction> transactions = newArrayList
 		(
@@ -85,7 +85,7 @@ public class FraudAnalyserTest {
 	final StatsCollector collector = mock(StatsCollector.class);
 	given(collector.suspicious()).willReturn(newArrayList(REGULAR_USER_ON_DUE_DAY));
 
-	analyser = new FraudAnalyser(SKIP_ANALYSIS, SUSPECT_INDIVIDUALLY, collector);
+	analyser = new SimpleFraudAnalyser(SKIP_ANALYSIS, SUSPECT_INDIVIDUALLY, collector);
 
 	final List<Transaction> transactions = newArrayList
 		(
