@@ -31,6 +31,7 @@ import solution.collectors.TransactionCountToAccountByUserCollector;
 import solution.transactions.TransactionGenerator;
 import solution.transactions.TransactionGeneratorConfig;
 import test.analyser.FraudAnalyser;
+import test.analyser.IteratingFraudAnalyser;
 import test.analyser.SimpleFraudAnalyser;
 import test.transactions.Transaction;
 
@@ -89,7 +90,7 @@ public class PerformanceTest {
     private static final int NUMBER_OF_TRANSACTIONS = 1_000_000;
 
     @Test
-    public void test()
+    public void simple_fraud_analyser()
     {
 	// given
 	final TransactionGenerator generator = new TransactionGenerator(CONFIG);
@@ -114,5 +115,27 @@ public class PerformanceTest {
 	assertThat(common, is(empty()));
 
 	assertThat(newArrayList(suspicious), hasSize(45287));
+    }
+
+    @Test
+    public void iterating_fraud_analyser()
+    {
+	// given
+	final TransactionGenerator generator = new TransactionGenerator(CONFIG);
+
+	final List<Long> whitelisted = generator.chooseWhitelisted(WHITELISTED_COUNT);
+	final Predicate<Transaction> skipAnalysis = belongsTo(whitelisted).or(sameDate(DUE_DAY).negate());
+
+	final List<Long> blacklisted = generator.chooseBlacklisted(BLACKLISTED_COUNT);
+	final Predicate<Transaction> suspectIndividually = belongsTo(blacklisted);
+
+	final FraudAnalyser analyser = new IteratingFraudAnalyser(skipAnalysis, suspectIndividually);
+
+	// when
+	final Iterator<Transaction> transactions = generator.generateIterator(NUMBER_OF_TRANSACTIONS);
+	final Iterator<Transaction> suspicious = analyser.analyse(transactions, DUE_DAY);
+
+	// then
+	assertThat(newArrayList(suspicious), hasSize(33339));
     }
 }

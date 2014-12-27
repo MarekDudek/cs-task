@@ -35,9 +35,14 @@ public class IteratingFraudAnalyserTest {
 
 	// then
 	assertThat(suspicious.hasNext(), is(true));
+	assertThat(suspicious.hasNext(), is(true));
 	assertThat(suspicious.next(), is(BLACKLISTED_USER_ON_DUE_DAY));
+
+	assertThat(suspicious.hasNext(), is(true));
 	assertThat(suspicious.hasNext(), is(true));
 	assertThat(suspicious.next(), is(REGULAR_USER_ON_DUE_DAY));
+
+	assertThat(suspicious.hasNext(), is(false));
 	assertThat(suspicious.hasNext(), is(false));
 
 	assertThat(suspicious.next(), any(Transaction.class));
@@ -71,7 +76,10 @@ public class IteratingFraudAnalyserTest {
 
 	// then
 	assertThat(suspicious.hasNext(), is(true));
+	assertThat(suspicious.hasNext(), is(true));
 	assertThat(suspicious.next(), is(BLACKLISTED_USER_ON_DUE_DAY));
+
+	assertThat(suspicious.hasNext(), is(false));
 	assertThat(suspicious.hasNext(), is(false));
 
 	assertThat(suspicious.next(), any(Transaction.class));
