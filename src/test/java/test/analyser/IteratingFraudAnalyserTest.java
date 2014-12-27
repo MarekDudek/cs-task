@@ -10,6 +10,7 @@ import static test.analyser.TestData.VARIOUS_TRANSACTIONS;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.function.Predicate;
 
 import org.junit.Test;
 
@@ -17,13 +18,16 @@ import test.transactions.Transaction;
 
 public class IteratingFraudAnalyserTest {
 
+    private static final Predicate<Transaction> SUSPECT_ALL = transaction -> true;
+
     private FraudAnalyser analyser;
 
     @Test(expected = NoSuchElementException.class)
     public void iteration_with_checking_if_next_exists()
     {
 	// given
-	analyser = new IteratingFraudAnalyser(SKIP_ANALYSIS);
+
+	analyser = new IteratingFraudAnalyser(SKIP_ANALYSIS, SUSPECT_ALL);
 
 	// when
 	final Iterator<Transaction> suspicious = analyser.analyse(VARIOUS_TRANSACTIONS.iterator(), null);
@@ -42,7 +46,7 @@ public class IteratingFraudAnalyserTest {
     public void iteration_without_checking_if_next_exists()
     {
 	// given
-	analyser = new IteratingFraudAnalyser(SKIP_ANALYSIS);
+	analyser = new IteratingFraudAnalyser(SKIP_ANALYSIS, SUSPECT_ALL);
 
 	// when
 	final Iterator<Transaction> suspicious = analyser.analyse(VARIOUS_TRANSACTIONS.iterator(), null);

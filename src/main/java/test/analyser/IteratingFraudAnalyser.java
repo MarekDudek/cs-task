@@ -14,11 +14,16 @@ import test.transactions.Transaction;
 public class IteratingFraudAnalyser extends FraudAnalyser {
 
     private final Predicate<Transaction> skipAnalysis;
+    private final Predicate<Transaction> suspectIndividually;
+
     private final Deque<Transaction> suspicious = newLinkedList();
 
-    public IteratingFraudAnalyser(final Predicate<Transaction> skipAnalysis)
+    public IteratingFraudAnalyser(
+	    final Predicate<Transaction> skipAnalysis,
+	    final Predicate<Transaction> suspectIndividually)
     {
 	this.skipAnalysis = checkNotNull(skipAnalysis);
+	this.suspectIndividually = checkNotNull(suspectIndividually);
     }
 
     @Override
@@ -33,8 +38,12 @@ public class IteratingFraudAnalyser extends FraudAnalyser {
 		if (next == null) {
 		    return false;
 		} else {
-		    suspicious.add(next);
-		    return true;
+		    if (suspectIndividually.test(next)) {
+			suspicious.add(next);
+			return true;
+		    } else {
+			return false;
+		    }
 		}
 	    }
 
