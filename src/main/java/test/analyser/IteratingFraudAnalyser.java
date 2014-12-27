@@ -45,10 +45,9 @@ public class IteratingFraudAnalyser extends FraudAnalyser {
 		if (optional.isPresent()) {
 		    final Transaction transaction = optional.get();
 		    suspicious.add(transaction);
-		    return true;
-		} else {
-		    return false;
 		}
+
+		return BooleanUtils.isFalse(suspicious.isEmpty());
 	    }
 
 	    @Override
