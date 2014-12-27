@@ -8,6 +8,8 @@ import java.util.Deque;
 import java.util.Iterator;
 import java.util.function.Predicate;
 
+import org.apache.commons.lang3.BooleanUtils;
+
 import solution.iterator.FilteringIterator;
 import test.transactions.Transaction;
 
@@ -40,10 +42,8 @@ public class IteratingFraudAnalyser extends FraudAnalyser {
 		} else {
 		    if (suspectIndividually.test(next)) {
 			suspicious.add(next);
-			return true;
-		    } else {
-			return false;
 		    }
+		    return BooleanUtils.isFalse(suspicious.isEmpty());
 		}
 	    }
 
