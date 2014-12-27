@@ -21,23 +21,30 @@ public class FilteringIterator<T> implements Iterator<T> {
     @Override
     public boolean hasNext()
     {
-	do
-	{
-	    if (unfiltered.hasNext())
-	    {
-		next = unfiltered.next();
-		if (predicate.test(next)) {
-		    return true;
-		}
-	    }
-	    else {
-		return false;
-	    }
-	} while (true);
+	next = findNext();
+	if (next == null) {
+	    return false;
+	} else {
+	    return true;
+	}
     }
 
     @Override
     public T next() {
 	return next;
+    }
+
+    private T findNext()
+    {
+	do {
+	    if (unfiltered.hasNext()) {
+		final T candidate = unfiltered.next();
+		if (predicate.test(candidate)) {
+		    return candidate;
+		}
+	    } else {
+		return null;
+	    }
+	} while (true);
     }
 }
