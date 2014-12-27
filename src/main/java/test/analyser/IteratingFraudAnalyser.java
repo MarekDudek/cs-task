@@ -29,17 +29,22 @@ public class IteratingFraudAnalyser extends FraudAnalyser {
 	    @Override
 	    public boolean hasNext()
 	    {
-		final boolean hasNext = super.hasNext();
-		if (hasNext) {
-		    final Transaction next = super.next();
+		final Transaction next = super.next();
+		if (next == null) {
+		    return false;
+		} else {
 		    suspicious.add(next);
+		    return true;
 		}
-		return hasNext;
 	    }
 
 	    @Override
 	    public Transaction next()
 	    {
+		if (suspicious.isEmpty()) {
+		    hasNext();
+		}
+
 		return suspicious.pop();
 	    }
 	};
