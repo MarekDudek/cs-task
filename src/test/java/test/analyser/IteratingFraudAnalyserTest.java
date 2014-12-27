@@ -15,11 +15,14 @@ import java.util.function.Predicate;
 
 import org.junit.Test;
 
+import solution.collectors.StatsCollector;
 import test.transactions.Transaction;
 
 public class IteratingFraudAnalyserTest {
 
     private static final Predicate<Transaction> SUSPECT_ALL = transaction -> true;
+    private static final StatsCollector NULL_COLLECTOR = new StatsCollector() {
+    };
 
     private FraudAnalyser analyser;
 
@@ -28,7 +31,7 @@ public class IteratingFraudAnalyserTest {
     {
 	// given
 
-	analyser = new IteratingFraudAnalyser(SKIP_ANALYSIS, SUSPECT_ALL);
+	analyser = new IteratingFraudAnalyser(SKIP_ANALYSIS, SUSPECT_ALL, NULL_COLLECTOR);
 
 	// when
 	final Iterator<Transaction> suspicious = analyser.analyse(VARIOUS_TRANSACTIONS.iterator(), null);
@@ -52,7 +55,7 @@ public class IteratingFraudAnalyserTest {
     public void iteration_without_checking_if_next_exists()
     {
 	// given
-	analyser = new IteratingFraudAnalyser(SKIP_ANALYSIS, SUSPECT_ALL);
+	analyser = new IteratingFraudAnalyser(SKIP_ANALYSIS, SUSPECT_ALL, NULL_COLLECTOR);
 
 	// when
 	final Iterator<Transaction> suspicious = analyser.analyse(VARIOUS_TRANSACTIONS.iterator(), null);
@@ -69,7 +72,7 @@ public class IteratingFraudAnalyserTest {
     {
 	// given
 
-	analyser = new IteratingFraudAnalyser(SKIP_ANALYSIS, SUSPECT_INDIVIDUALLY);
+	analyser = new IteratingFraudAnalyser(SKIP_ANALYSIS, SUSPECT_INDIVIDUALLY, NULL_COLLECTOR);
 
 	// when
 	final Iterator<Transaction> suspicious = analyser.analyse(VARIOUS_TRANSACTIONS.iterator(), null);
@@ -89,7 +92,7 @@ public class IteratingFraudAnalyserTest {
     public void iteration_without_checking_if_next_exists__when_not_all_are_suspected()
     {
 	// given
-	analyser = new IteratingFraudAnalyser(SKIP_ANALYSIS, SUSPECT_INDIVIDUALLY);
+	analyser = new IteratingFraudAnalyser(SKIP_ANALYSIS, SUSPECT_INDIVIDUALLY, NULL_COLLECTOR);
 
 	// when
 	final Iterator<Transaction> suspicious = analyser.analyse(VARIOUS_TRANSACTIONS.iterator(), null);

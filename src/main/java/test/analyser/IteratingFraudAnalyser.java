@@ -11,6 +11,7 @@ import java.util.function.Predicate;
 
 import org.apache.commons.lang3.BooleanUtils;
 
+import solution.collectors.StatsCollector;
 import solution.iterator.FilteringIterator;
 import test.transactions.Transaction;
 
@@ -18,15 +19,18 @@ public class IteratingFraudAnalyser extends FraudAnalyser {
 
     private final Predicate<Transaction> skipAnalysis;
     private final Predicate<Transaction> suspectIndividually;
+    private final StatsCollector collector;
 
     private final Deque<Transaction> suspicious = newLinkedList();
 
     public IteratingFraudAnalyser(
 	    final Predicate<Transaction> skipAnalysis,
-	    final Predicate<Transaction> suspectIndividually)
+	    final Predicate<Transaction> suspectIndividually,
+	    final StatsCollector collector)
     {
 	this.skipAnalysis = checkNotNull(skipAnalysis);
 	this.suspectIndividually = checkNotNull(suspectIndividually);
+	this.collector = checkNotNull(collector);
     }
 
     @Override

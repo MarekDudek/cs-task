@@ -19,9 +19,9 @@ import test.transactions.Transaction;
  */
 public class SimpleFraudAnalyser extends FraudAnalyser {
 
-    private Predicate<Transaction> skipAnalysis;
-    private Predicate<Transaction> suspectIndividually;
-    private StatsCollector collector;
+    private final Predicate<Transaction> skipAnalysis;
+    private final Predicate<Transaction> suspectIndividually;
+    private final StatsCollector collector;
 
     public SimpleFraudAnalyser(
 	    final Predicate<Transaction> skipAnalysis,
