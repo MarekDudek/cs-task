@@ -8,7 +8,6 @@ import java.util.Date;
 import java.util.Deque;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Optional;
 import java.util.function.Predicate;
 
 import org.apache.commons.lang3.BooleanUtils;
@@ -54,13 +53,12 @@ public class IteratingFraudAnalyser extends FraudAnalyser {
 		    return true;
 		}
 
-		final Optional<Transaction> optional = findNextSuspiciousIndividually();
-		if (optional.isPresent()) {
-		    final Transaction transaction = optional.get();
+		final Transaction transaction = findNextSuspiciousIndividually();
+		if (transaction == null) {
+		    inputExhausted = true;
+		} else {
 		    cache.add(transaction);
 		    suspicious.add(transaction);
-		} else {
-		    inputExhausted = true;
 		}
 
 		if (inputExhausted) {
@@ -87,16 +85,16 @@ public class IteratingFraudAnalyser extends FraudAnalyser {
 		return BooleanUtils.isFalse(cache.isEmpty());
 	    }
 
-	    private Optional<Transaction> findNextSuspiciousIndividually()
+	    private Transaction findNextSuspiciousIndividually()
 	    {
 		do {
 		    final Transaction candidate = super.next();
 		    if (candidate == null) {
-			return Optional.empty();
+			return null;
 		    }
 		    collector.collect(candidate);
 		    if (suspectIndividually.test(candidate)) {
-			return Optional.of(candidate);
+			return candidate;
 		    }
 		} while (true);
 	    }
