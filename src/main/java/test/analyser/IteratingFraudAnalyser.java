@@ -6,6 +6,7 @@ import static com.google.common.collect.Lists.newLinkedList;
 import java.util.Date;
 import java.util.Deque;
 import java.util.Iterator;
+import java.util.Optional;
 import java.util.function.Predicate;
 
 import org.apache.commons.lang3.BooleanUtils;
@@ -40,16 +41,14 @@ public class IteratingFraudAnalyser extends FraudAnalyser {
 		    return true;
 		}
 
-		do {
-		    final Transaction candidate = super.next();
-		    if (candidate == null) {
-			return false;
-		    }
-		    if (suspectIndividually.test(candidate)) {
-			suspicious.add(candidate);
-			return true;
-		    }
-		} while (true);
+		final Optional<Transaction> optional = findNextSuspiciousIndividually();
+		if (optional.isPresent()) {
+		    final Transaction transaction = optional.get();
+		    suspicious.add(transaction);
+		    return true;
+		} else {
+		    return false;
+		}
 	    }
 
 	    @Override
@@ -60,6 +59,19 @@ public class IteratingFraudAnalyser extends FraudAnalyser {
 		}
 
 		return suspicious.pop();
+	    }
+
+	    private Optional<Transaction> findNextSuspiciousIndividually()
+	    {
+		do {
+		    final Transaction candidate = super.next();
+		    if (candidate == null) {
+			return Optional.empty();
+		    }
+		    if (suspectIndividually.test(candidate)) {
+			return Optional.of(candidate);
+		    }
+		} while (true);
 	    }
 	};
     }
