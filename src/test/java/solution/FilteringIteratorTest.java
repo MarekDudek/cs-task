@@ -77,4 +77,18 @@ public class FilteringIteratorTest {
 
 	assertThat(iterator.hasNext(), is(false));
     }
+
+    @Test
+    public void repeatedly_checking_if_next_exists()
+    {
+	// when
+	iterator = new FilteringIterator<Integer>(numbers, even);
+
+	// then
+	for (int i = 0; i < 10; i++)
+	{
+	    // then
+	    assertThat(iterator.hasNext(), is(true));
+	}
+    }
 }
