@@ -3,6 +3,8 @@ package test.transactions;
 import java.math.BigDecimal;
 import java.util.Date;
 
+import com.google.common.base.MoreObjects;
+
 /**
  * This is single transaction. Imagine that This class is part of another
  * system.
@@ -15,6 +17,18 @@ public class Transaction {
     private Long accountFromId;
     private Long accountToId;
     private Date transactionDate;
+
+    @Override
+    public String toString() {
+	return MoreObjects.toStringHelper(this)
+		.add("ID", transactionId)
+		.add("user", userId)
+		.add("date", transactionDate)
+		.add("from account", accountFromId)
+		.add("to account", accountToId)
+		.add("amount", amount)
+		.toString();
+    }
 
     public BigDecimal getAmount() {
 	return amount;
@@ -37,7 +51,7 @@ public class Transaction {
     }
 
     public Date getDate() {
-	return transactionDate;
+	return new Date(transactionDate.getTime());
     }
 
     public void setAmount(BigDecimal amount) {
@@ -61,6 +75,6 @@ public class Transaction {
     }
 
     public void setDate(Date date) {
-	this.transactionDate = date;
+	this.transactionDate = new Date(date.getTime());
     }
 }
