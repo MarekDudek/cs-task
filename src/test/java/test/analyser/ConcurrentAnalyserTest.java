@@ -6,11 +6,11 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertThat;
 import static solution.PredicateFactory.belongsTo;
 import static solution.PredicateFactory.sameDate;
+import static test.analyser.TestGeneratorSettings.ACCOUNT_COUNT;
 import static test.analyser.TestGeneratorSettings.BLACKLISTED_COUNT;
 import static test.analyser.TestGeneratorSettings.CONFIG;
 import static test.analyser.TestGeneratorSettings.DUE_DAY;
 import static test.analyser.TestGeneratorSettings.NUMBER_OF_TRANSACTIONS;
-import static test.analyser.TestGeneratorSettings.USER_COUNT;
 import static test.analyser.TestGeneratorSettings.WHITELISTED_COUNT;
 
 import java.util.Iterator;
@@ -52,7 +52,7 @@ public class ConcurrentAnalyserTest {
     }
 
     @Test
-    public void transaction_count_from_account()
+    public void transactions_from_account()
     {
 	final TransactionGenerator generator = new TransactionGenerator(CONFIG);
 
@@ -63,12 +63,12 @@ public class ConcurrentAnalyserTest {
 	final List<Transaction> transactions = newArrayList(result);
 
 	// when
-	final Map<Long, List<Transaction>> transactionsPerUser = transactions
+	final Map<Long, List<Transaction>> transactionsPerFromAccount = transactions
 		.stream()
 		.filter(skipAnalysis.negate())
-		.collect(Collectors.groupingBy(Transaction::getUserId));
+		.collect(Collectors.groupingBy(Transaction::getAccountFromId));
 
 	// then
-	assertThat(transactionsPerUser.keySet(), hasSize(USER_COUNT - WHITELISTED_COUNT - 1));
+	assertThat(transactionsPerFromAccount.keySet(), hasSize(ACCOUNT_COUNT - 1));
     }
 }
