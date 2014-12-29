@@ -104,4 +104,29 @@ public class ConcurrentAnalyserTest {
         // then
         assertThat(transactionsFromOverusedAccounts, hasSize(6029));
     }
+
+    @Test
+    public void transactions_to_account_by_user()
+    {
+        // given
+        final TransactionGenerator generator = new TransactionGenerator(CONFIG);
+
+        final List<Long> whitelisted = generator.chooseWhitelisted(WHITELISTED_COUNT);
+        final Predicate<Transaction> skipAnalysis = belongsTo(whitelisted).or(sameDate(DUE_DAY).negate());
+
+        final Iterator<Transaction> result = generator.generateIterator(NUMBER_OF_TRANSACTIONS);
+        final List<Transaction> transactions = newArrayList(result);
+
+        // when
+        final Map<Long, Map<Long, List<Transaction>>> transactionsPerToAccountPerUser = transactions.stream()
+                .filter(skipAnalysis.negate())
+                .collect(
+                        Collectors.groupingBy(
+                                Transaction::getAccountToId,
+                                Collectors.groupingBy(Transaction::getUserId)
+                                )
+                );
+
+        assertThat(transactionsPerToAccountPerUser.keySet(), hasSize(ACCOUNT_COUNT - 1));
+    }
 }
