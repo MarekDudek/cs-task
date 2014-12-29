@@ -25,22 +25,22 @@ public class TransactionBuilderTest {
     @Test
     public void transaction_is_properly_built()
     {
-	// when
-	final Transaction transaction = transaction()
-		.id(TRANSACTION_ID)
-		.user(USER_ID)
-		.date(DATE)
-		.toAccount(TO_ACCOUNT)
-		.fromAccount(FROM_ACCOUNT)
-		.amount(AMOUNT)
-		.build();
+        // when
+        final Transaction transaction = transaction()
+                .id(TRANSACTION_ID)
+                .user(USER_ID)
+                .date(DATE)
+                .toAccount(TO_ACCOUNT)
+                .fromAccount(FROM_ACCOUNT)
+                .amount(AMOUNT)
+                .build();
 
-	// then
-	assertThat(transaction.getTransactionId(), is(equalTo(TRANSACTION_ID)));
-	assertThat(transaction.getUserId(), is(equalTo(USER_ID)));
-	assertThat(transaction.getDate(), is(equalTo(DATE)));
-	assertThat(transaction.getAccountToId(), is(equalTo(TO_ACCOUNT)));
-	assertThat(transaction.getAccountFromId(), is(equalTo(FROM_ACCOUNT)));
-	assertThat(transaction.getAmount(), is(equalTo(AMOUNT)));
+        // then
+        assertThat(transaction.getTransactionId(), is(equalTo(TRANSACTION_ID)));
+        assertThat(transaction.getUserId(), is(equalTo(USER_ID)));
+        assertThat(transaction.getDate(), is(equalTo(DATE)));
+        assertThat(transaction.getAccountToId(), is(equalTo(TO_ACCOUNT)));
+        assertThat(transaction.getAccountFromId(), is(equalTo(FROM_ACCOUNT)));
+        assertThat(transaction.getAmount(), is(equalTo(AMOUNT)));
     }
 }

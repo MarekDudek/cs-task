@@ -29,37 +29,37 @@ public class SimpleFraudAnalyserTest {
     @Test
     public void skipping_and_individual_analysis_work_fine()
     {
-	// given
-	final StatsCollector nullCollector = new StatsCollector() {
-	};
+        // given
+        final StatsCollector nullCollector = new StatsCollector() {
+        };
 
-	analyser = new SimpleFraudAnalyser(SKIP_ANALYSIS, SUSPECT_INDIVIDUALLY, nullCollector);
+        analyser = new SimpleFraudAnalyser(SKIP_ANALYSIS, SUSPECT_INDIVIDUALLY, nullCollector);
 
-	// when
-	final Iterator<Transaction> iterator = analyser.analyse(VARIOUS_TRANSACTIONS.iterator(), DUE_DAY);
-	final List<Transaction> output = newArrayList(iterator);
+        // when
+        final Iterator<Transaction> iterator = analyser.analyse(VARIOUS_TRANSACTIONS.iterator(), DUE_DAY);
+        final List<Transaction> output = newArrayList(iterator);
 
-	// then
-	assertThat(output, hasSize(1));
-	assertThat(output, hasItem(BLACKLISTED_USER_ON_DUE_DAY));
+        // then
+        assertThat(output, hasSize(1));
+        assertThat(output, hasItem(BLACKLISTED_USER_ON_DUE_DAY));
     }
 
     @Test
     public void merging_suspicious_works_fine()
     {
-	// given
-	final StatsCollector collector = mock(StatsCollector.class);
-	given(collector.suspicious()).willReturn(newArrayList(REGULAR_USER_ON_DUE_DAY));
+        // given
+        final StatsCollector collector = mock(StatsCollector.class);
+        given(collector.suspicious()).willReturn(newArrayList(REGULAR_USER_ON_DUE_DAY));
 
-	analyser = new SimpleFraudAnalyser(SKIP_ANALYSIS, SUSPECT_INDIVIDUALLY, collector);
+        analyser = new SimpleFraudAnalyser(SKIP_ANALYSIS, SUSPECT_INDIVIDUALLY, collector);
 
-	// when
-	final Iterator<Transaction> iterator = analyser.analyse(VARIOUS_TRANSACTIONS.iterator(), DUE_DAY);
-	final List<Transaction> output = newArrayList(iterator);
+        // when
+        final Iterator<Transaction> iterator = analyser.analyse(VARIOUS_TRANSACTIONS.iterator(), DUE_DAY);
+        final List<Transaction> output = newArrayList(iterator);
 
-	// then
-	assertThat(output, hasSize(2));
-	assertThat(output, hasItem(BLACKLISTED_USER_ON_DUE_DAY));
-	assertThat(output, hasItem(REGULAR_USER_ON_DUE_DAY));
+        // then
+        assertThat(output, hasSize(2));
+        assertThat(output, hasItem(BLACKLISTED_USER_ON_DUE_DAY));
+        assertThat(output, hasItem(REGULAR_USER_ON_DUE_DAY));
     }
 }

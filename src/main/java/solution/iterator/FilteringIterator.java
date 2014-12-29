@@ -15,43 +15,43 @@ public class FilteringIterator<T> implements Iterator<T> {
 
     public FilteringIterator(final Iterator<T> unfiltered, final Predicate<T> predicate)
     {
-	this.unfiltered = checkNotNull(unfiltered);
-	this.predicate = checkNotNull(predicate);
+        this.unfiltered = checkNotNull(unfiltered);
+        this.predicate = checkNotNull(predicate);
     }
 
     @Override
     public boolean hasNext()
     {
-	if (consumed) {
-	    next = findNext();
-	    consumed = false;
-	}
+        if (consumed) {
+            next = findNext();
+            consumed = false;
+        }
 
-	return next != null;
+        return next != null;
     }
 
     @Override
     public T next()
     {
-	if (consumed) {
-	    next = findNext();
-	}
-	consumed = true;
+        if (consumed) {
+            next = findNext();
+        }
+        consumed = true;
 
-	return next;
+        return next;
     }
 
     private T findNext()
     {
-	do {
-	    if (unfiltered.hasNext()) {
-		final T candidate = unfiltered.next();
-		if (predicate.test(candidate)) {
-		    return candidate;
-		}
-	    } else {
-		return null;
-	    }
-	} while (true);
+        do {
+            if (unfiltered.hasNext()) {
+                final T candidate = unfiltered.next();
+                if (predicate.test(candidate)) {
+                    return candidate;
+                }
+            } else {
+                return null;
+            }
+        } while (true);
     }
 }

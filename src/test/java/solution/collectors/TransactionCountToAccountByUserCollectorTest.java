@@ -32,24 +32,24 @@ public class TransactionCountToAccountByUserCollectorTest {
     @Test
     public void test()
     {
-	// given
-	final StatsCollector collector = new TransactionCountToAccountByUserCollector(2);
+        // given
+        final StatsCollector collector = new TransactionCountToAccountByUserCollector(2);
 
-	// when
-	collector.collect(TRANSACTION_1);
-	collector.collect(TRANSACTION_2);
-	collector.collect(TRANSACTION_3);
-	collector.collect(TRANSACTION_4);
-	collector.collect(TRANSACTION_5);
-	collector.collect(TRANSACTION_6);
-	collector.collect(TRANSACTION_7);
+        // when
+        collector.collect(TRANSACTION_1);
+        collector.collect(TRANSACTION_2);
+        collector.collect(TRANSACTION_3);
+        collector.collect(TRANSACTION_4);
+        collector.collect(TRANSACTION_5);
+        collector.collect(TRANSACTION_6);
+        collector.collect(TRANSACTION_7);
 
-	final Collection<Transaction> suspicious = collector.suspicious();
+        final Collection<Transaction> suspicious = collector.suspicious();
 
-	// then
-	assertThat(suspicious, hasSize(3));
-	assertThat(suspicious, hasItem(TRANSACTION_1));
-	assertThat(suspicious, hasItem(TRANSACTION_2));
-	assertThat(suspicious, hasItem(TRANSACTION_3));
+        // then
+        assertThat(suspicious, hasSize(3));
+        assertThat(suspicious, hasItem(TRANSACTION_1));
+        assertThat(suspicious, hasItem(TRANSACTION_2));
+        assertThat(suspicious, hasItem(TRANSACTION_3));
     }
 }

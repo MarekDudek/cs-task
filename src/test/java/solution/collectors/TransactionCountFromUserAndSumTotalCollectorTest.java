@@ -83,56 +83,56 @@ public class TransactionCountFromUserAndSumTotalCollectorTest {
     @Test
     public void test()
     {
-	// given
-	@SuppressWarnings("unchecked")
-	final List<Pair<Integer, BigDecimal>> thresholds = newArrayList
-		(
-			Pair.with(3, new BigDecimal(10000)),
-			Pair.with(5, new BigDecimal(5000))
-		);
-	final StatsCollector collector = new TransactionCountFromUserAndSumTotalCollector(thresholds);
+        // given
+        @SuppressWarnings("unchecked")
+        final List<Pair<Integer, BigDecimal>> thresholds = newArrayList
+                (
+                        Pair.with(3, new BigDecimal(10000)),
+                        Pair.with(5, new BigDecimal(5000))
+                );
+        final StatsCollector collector = new TransactionCountFromUserAndSumTotalCollector(thresholds);
 
-	// when
-	collector.collect(TRANSACTION_1);
-	collector.collect(TRANSACTION_2);
-	collector.collect(TRANSACTION_3);
-	collector.collect(TRANSACTION_4);
-	collector.collect(TRANSACTION_5);
-	collector.collect(TRANSACTION_6);
-	collector.collect(TRANSACTION_7);
-	collector.collect(TRANSACTION_8);
-	collector.collect(TRANSACTION_9);
-	collector.collect(TRANSACTION_10);
-	collector.collect(TRANSACTION_11);
-	collector.collect(TRANSACTION_12);
-	collector.collect(TRANSACTION_13);
-	collector.collect(TRANSACTION_14);
-	collector.collect(TRANSACTION_15);
-	collector.collect(TRANSACTION_16);
-	collector.collect(TRANSACTION_17);
-	collector.collect(TRANSACTION_18);
-	collector.collect(TRANSACTION_19);
-	collector.collect(TRANSACTION_20);
-	collector.collect(TRANSACTION_21);
-	collector.collect(TRANSACTION_22);
-	collector.collect(TRANSACTION_23);
-	collector.collect(TRANSACTION_24);
-	collector.collect(TRANSACTION_25);
-	collector.collect(TRANSACTION_26);
-	collector.collect(TRANSACTION_27);
-	collector.collect(TRANSACTION_28);
-	collector.collect(TRANSACTION_29);
-	collector.collect(TRANSACTION_30);
-	collector.collect(TRANSACTION_31);
-	collector.collect(TRANSACTION_32);
-	collector.collect(TRANSACTION_33);
-	collector.collect(TRANSACTION_34);
-	collector.collect(TRANSACTION_35);
-	collector.collect(TRANSACTION_36);
+        // when
+        collector.collect(TRANSACTION_1);
+        collector.collect(TRANSACTION_2);
+        collector.collect(TRANSACTION_3);
+        collector.collect(TRANSACTION_4);
+        collector.collect(TRANSACTION_5);
+        collector.collect(TRANSACTION_6);
+        collector.collect(TRANSACTION_7);
+        collector.collect(TRANSACTION_8);
+        collector.collect(TRANSACTION_9);
+        collector.collect(TRANSACTION_10);
+        collector.collect(TRANSACTION_11);
+        collector.collect(TRANSACTION_12);
+        collector.collect(TRANSACTION_13);
+        collector.collect(TRANSACTION_14);
+        collector.collect(TRANSACTION_15);
+        collector.collect(TRANSACTION_16);
+        collector.collect(TRANSACTION_17);
+        collector.collect(TRANSACTION_18);
+        collector.collect(TRANSACTION_19);
+        collector.collect(TRANSACTION_20);
+        collector.collect(TRANSACTION_21);
+        collector.collect(TRANSACTION_22);
+        collector.collect(TRANSACTION_23);
+        collector.collect(TRANSACTION_24);
+        collector.collect(TRANSACTION_25);
+        collector.collect(TRANSACTION_26);
+        collector.collect(TRANSACTION_27);
+        collector.collect(TRANSACTION_28);
+        collector.collect(TRANSACTION_29);
+        collector.collect(TRANSACTION_30);
+        collector.collect(TRANSACTION_31);
+        collector.collect(TRANSACTION_32);
+        collector.collect(TRANSACTION_33);
+        collector.collect(TRANSACTION_34);
+        collector.collect(TRANSACTION_35);
+        collector.collect(TRANSACTION_36);
 
-	final Collection<Transaction> suspicious = collector.suspicious();
+        final Collection<Transaction> suspicious = collector.suspicious();
 
-	// then
-	assertThat(suspicious, hasSize(16));
+        // then
+        assertThat(suspicious, hasSize(16));
     }
 }

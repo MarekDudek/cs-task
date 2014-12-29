@@ -17,58 +17,58 @@ public class TransactionBuilder {
     private BigDecimal amount;
 
     public static TransactionBuilder transaction() {
-	return new TransactionBuilder();
+        return new TransactionBuilder();
     }
 
     private TransactionBuilder() {
-	super();
+        super();
     }
 
     public TransactionBuilder id(final long id) {
-	transactionId = Long.valueOf(id);
-	return this;
+        transactionId = Long.valueOf(id);
+        return this;
     }
 
     public TransactionBuilder user(final long user) {
-	userId = Long.valueOf(user);
-	return this;
+        userId = Long.valueOf(user);
+        return this;
     }
 
     public TransactionBuilder date(final Date date) {
-	this.date = new Date(date.getTime());
-	return this;
+        this.date = new Date(date.getTime());
+        return this;
     }
 
     public TransactionBuilder toAccount(final long toAccount) {
-	accountToId = Long.valueOf(toAccount);
-	return this;
+        accountToId = Long.valueOf(toAccount);
+        return this;
     }
 
     public TransactionBuilder fromAccount(final long fromAccount) {
-	accountFromId = Long.valueOf(fromAccount);
-	return this;
+        accountFromId = Long.valueOf(fromAccount);
+        return this;
     }
 
     public TransactionBuilder amount(final BigDecimal amount) {
-	checkArgument(amount.compareTo(BigDecimal.ZERO) > 0);
-	this.amount = amount;
-	return this;
+        checkArgument(amount.compareTo(BigDecimal.ZERO) > 0);
+        this.amount = amount;
+        return this;
     }
 
     public Transaction build()
     {
-	final Transaction transaction = new Transaction();
+        final Transaction transaction = new Transaction();
 
-	transaction.setTransactionId(transactionId);
-	transaction.setAccountToId(accountToId);
-	transaction.setAccountFromId(accountFromId);
-	transaction.setAmount(amount);
-	transaction.setUserId(userId);
+        transaction.setTransactionId(transactionId);
+        transaction.setAccountToId(accountToId);
+        transaction.setAccountFromId(accountFromId);
+        transaction.setAmount(amount);
+        transaction.setUserId(userId);
 
-	if (date != null) {
-	    transaction.setDate(date);
-	}
+        if (date != null) {
+            transaction.setDate(date);
+        }
 
-	return transaction;
+        return transaction;
     }
 }

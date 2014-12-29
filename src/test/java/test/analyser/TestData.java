@@ -20,16 +20,16 @@ import test.transactions.Transaction;
 public final class TestData {
 
     public static final Date DUE_DAY =
-	    new Calendar.Builder()
-		    .setDate(2014, Calendar.DECEMBER, 21)
-		    .setTimeOfDay(23, 59, 59)
-		    .build().getTime();
+            new Calendar.Builder()
+                    .setDate(2014, Calendar.DECEMBER, 21)
+                    .setTimeOfDay(23, 59, 59)
+                    .build().getTime();
 
     public static final Date OTHER_DAY =
-	    new Calendar.Builder()
-		    .setDate(1997, Calendar.JULY, 1)
-		    .setTimeOfDay(1, 1, 1)
-		    .build().getTime();
+            new Calendar.Builder()
+                    .setDate(1997, Calendar.JULY, 1)
+                    .setTimeOfDay(1, 1, 1)
+                    .build().getTime();
 
     public static final Transaction WHITELISTED_USER_ON_DUE_DAY = transaction().date(DUE_DAY).user(WHITELISTED_USER_1).build();
     public static final Transaction BLACKLISTED_USER_ON_DUE_DAY = transaction().date(DUE_DAY).user(BLACKLISTED_USER_1).build();
@@ -37,17 +37,17 @@ public final class TestData {
     public static final Transaction REGULAR_USER_ON_DUE_DAY = transaction().date(DUE_DAY).user(REGULAR_USER_1).build();
 
     public static final List<Transaction> VARIOUS_TRANSACTIONS = newArrayList
-	    (
-		    WHITELISTED_USER_ON_DUE_DAY,
-		    BLACKLISTED_USER_ON_OTHER_DAY,
-		    BLACKLISTED_USER_ON_DUE_DAY,
-		    REGULAR_USER_ON_DUE_DAY
-	    );
+            (
+                    WHITELISTED_USER_ON_DUE_DAY,
+                    BLACKLISTED_USER_ON_OTHER_DAY,
+                    BLACKLISTED_USER_ON_DUE_DAY,
+                    REGULAR_USER_ON_DUE_DAY
+            );
 
     public static final Predicate<Transaction> SKIP_ANALYSIS = belongsTo(WHITELISTED_USERS).or(sameDate(DUE_DAY).negate());
     public static final Predicate<Transaction> SUSPECT_INDIVIDUALLY = belongsTo(BLACKLISTED_USERS);
 
     private TestData() {
-	super();
+        super();
     }
 }

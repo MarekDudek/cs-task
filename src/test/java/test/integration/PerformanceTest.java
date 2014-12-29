@@ -42,64 +42,64 @@ public class PerformanceTest {
     @Test
     public void simple_fraud_analyser()
     {
-	// given
-	final TransactionGenerator generator = new TransactionGenerator(CONFIG);
+        // given
+        final TransactionGenerator generator = new TransactionGenerator(CONFIG);
 
-	final List<Long> whitelisted = generator.chooseWhitelisted(WHITELISTED_COUNT);
-	final Predicate<Transaction> skipAnalysis = belongsTo(whitelisted).or(sameDate(DUE_DAY).negate());
+        final List<Long> whitelisted = generator.chooseWhitelisted(WHITELISTED_COUNT);
+        final Predicate<Transaction> skipAnalysis = belongsTo(whitelisted).or(sameDate(DUE_DAY).negate());
 
-	final List<Long> blacklisted = generator.chooseBlacklisted(BLACKLISTED_COUNT);
-	final Predicate<Transaction> suspectIndividually = belongsTo(blacklisted);
+        final List<Long> blacklisted = generator.chooseBlacklisted(BLACKLISTED_COUNT);
+        final Predicate<Transaction> suspectIndividually = belongsTo(blacklisted);
 
-	final StatsCollector collector = new MultiStatCollector
-		(
-			new TransactionCountFromAccoutCollector(MAX_ALLOWED_FROM_ACCOUNT),
-			new TransactionCountToAccountByUserCollector(MAX_ALLOWED_TO_ACCOUNT_BY_USER),
-			new TransactionCountFromUserAndSumTotalCollector(THRESHOLDS)
-		);
+        final StatsCollector collector = new MultiStatCollector
+                (
+                        new TransactionCountFromAccoutCollector(MAX_ALLOWED_FROM_ACCOUNT),
+                        new TransactionCountToAccountByUserCollector(MAX_ALLOWED_TO_ACCOUNT_BY_USER),
+                        new TransactionCountFromUserAndSumTotalCollector(THRESHOLDS)
+                );
 
-	final FraudAnalyser analyser = new SimpleFraudAnalyser(skipAnalysis, suspectIndividually, collector);
+        final FraudAnalyser analyser = new SimpleFraudAnalyser(skipAnalysis, suspectIndividually, collector);
 
-	// when
-	final Iterator<Transaction> transactions = generator.generateIterator(NUMBER_OF_TRANSACTIONS);
-	final Iterator<Transaction> suspicious = analyser.analyse(transactions, DUE_DAY);
+        // when
+        final Iterator<Transaction> transactions = generator.generateIterator(NUMBER_OF_TRANSACTIONS);
+        final Iterator<Transaction> suspicious = analyser.analyse(transactions, DUE_DAY);
 
-	// then
-	assertThat(whitelisted, hasSize(WHITELISTED_COUNT));
-	assertThat(blacklisted, hasSize(BLACKLISTED_COUNT));
+        // then
+        assertThat(whitelisted, hasSize(WHITELISTED_COUNT));
+        assertThat(blacklisted, hasSize(BLACKLISTED_COUNT));
 
-	final Set<Long> common = intersection(newHashSet(whitelisted), newHashSet(blacklisted));
-	assertThat(common, is(empty()));
+        final Set<Long> common = intersection(newHashSet(whitelisted), newHashSet(blacklisted));
+        assertThat(common, is(empty()));
 
-	assertThat(newArrayList(suspicious), hasSize(45287));
+        assertThat(newArrayList(suspicious), hasSize(45287));
     }
 
     @Test
     public void iterating_fraud_analyser()
     {
-	// given
-	final TransactionGenerator generator = new TransactionGenerator(CONFIG);
+        // given
+        final TransactionGenerator generator = new TransactionGenerator(CONFIG);
 
-	final List<Long> whitelisted = generator.chooseWhitelisted(WHITELISTED_COUNT);
-	final Predicate<Transaction> skipAnalysis = belongsTo(whitelisted).or(sameDate(DUE_DAY).negate());
+        final List<Long> whitelisted = generator.chooseWhitelisted(WHITELISTED_COUNT);
+        final Predicate<Transaction> skipAnalysis = belongsTo(whitelisted).or(sameDate(DUE_DAY).negate());
 
-	final List<Long> blacklisted = generator.chooseBlacklisted(BLACKLISTED_COUNT);
-	final Predicate<Transaction> suspectIndividually = belongsTo(blacklisted);
+        final List<Long> blacklisted = generator.chooseBlacklisted(BLACKLISTED_COUNT);
+        final Predicate<Transaction> suspectIndividually = belongsTo(blacklisted);
 
-	final StatsCollector collector = new MultiStatCollector
-		(
-			new TransactionCountFromAccoutCollector(MAX_ALLOWED_FROM_ACCOUNT),
-			new TransactionCountToAccountByUserCollector(MAX_ALLOWED_TO_ACCOUNT_BY_USER),
-			new TransactionCountFromUserAndSumTotalCollector(THRESHOLDS)
-		);
+        final StatsCollector collector = new MultiStatCollector
+                (
+                        new TransactionCountFromAccoutCollector(MAX_ALLOWED_FROM_ACCOUNT),
+                        new TransactionCountToAccountByUserCollector(MAX_ALLOWED_TO_ACCOUNT_BY_USER),
+                        new TransactionCountFromUserAndSumTotalCollector(THRESHOLDS)
+                );
 
-	final FraudAnalyser analyser = new IteratingFraudAnalyser(skipAnalysis, suspectIndividually, collector);
+        final FraudAnalyser analyser = new IteratingFraudAnalyser(skipAnalysis, suspectIndividually, collector);
 
-	// when
-	final Iterator<Transaction> transactions = generator.generateIterator(NUMBER_OF_TRANSACTIONS);
-	final Iterator<Transaction> suspicious = analyser.analyse(transactions, DUE_DAY);
+        // when
+        final Iterator<Transaction> transactions = generator.generateIterator(NUMBER_OF_TRANSACTIONS);
+        final Iterator<Transaction> suspicious = analyser.analyse(transactions, DUE_DAY);
 
-	// then
-	assertThat(newArrayList(suspicious), hasSize(45287));
+        // then
+        assertThat(newArrayList(suspicious), hasSize(45287));
     }
 }

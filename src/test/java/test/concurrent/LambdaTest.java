@@ -21,36 +21,36 @@ public class LambdaTest {
     @Test
     public void simple_reduction()
     {
-	// given
-	final Range<Long> range = Range.closed(1L, (long) MILLION);
-	final Set<Long> numbers = ContiguousSet.create(range, DiscreteDomain.longs());
+        // given
+        final Range<Long> range = Range.closed(1L, (long) MILLION);
+        final Set<Long> numbers = ContiguousSet.create(range, DiscreteDomain.longs());
 
-	// when
-	final long sum = numbers.parallelStream()
-		.map(x -> x * x)
-		.reduce(0L, (a, b) -> a + b);
+        // when
+        final long sum = numbers.parallelStream()
+                .map(x -> x * x)
+                .reduce(0L, (a, b) -> a + b);
 
-	// then
-	assertThat(sum, equalTo(333333833333500000L));
+        // then
+        assertThat(sum, equalTo(333333833333500000L));
     }
 
     @Test
     public void reduction_with_side_effect()
     {
-	// given
-	final Set<Long> set = ContiguousSet.create(Range.closed(1L, (long) MILLION), DiscreteDomain.longs());
-	final BlockingQueue<Long> numbers = new LinkedBlockingQueue<>();
+        // given
+        final Set<Long> set = ContiguousSet.create(Range.closed(1L, (long) MILLION), DiscreteDomain.longs());
+        final BlockingQueue<Long> numbers = new LinkedBlockingQueue<>();
 
-	// when
-	final long sum = set.parallelStream()
-		.map(x -> {
-		    numbers.add(x);
-		    return x * x;
-		})
-		.reduce(0L, (a, b) -> a + b);
+        // when
+        final long sum = set.parallelStream()
+                .map(x -> {
+                    numbers.add(x);
+                    return x * x;
+                })
+                .reduce(0L, (a, b) -> a + b);
 
-	// then
-	assertThat(sum, equalTo(333333833333500000L));
-	assertThat(numbers, hasSize(MILLION));
+        // then
+        assertThat(sum, equalTo(333333833333500000L));
+        assertThat(numbers, hasSize(MILLION));
     }
 }

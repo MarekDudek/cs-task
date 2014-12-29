@@ -11,6 +11,6 @@ public interface StatsCollector {
     }
 
     default Collection<Transaction> suspicious() {
-	return Collections.emptyList();
+        return Collections.emptyList();
     };
 }
