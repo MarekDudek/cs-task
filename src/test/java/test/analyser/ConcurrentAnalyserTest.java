@@ -54,6 +54,7 @@ public class ConcurrentAnalyserTest {
     @Test
     public void transactions_from_account()
     {
+        // given
         final TransactionGenerator generator = new TransactionGenerator(CONFIG);
 
         final List<Long> whitelisted = generator.chooseWhitelisted(WHITELISTED_COUNT);
@@ -75,6 +76,7 @@ public class ConcurrentAnalyserTest {
     @Test
     public void transactions_from_accounts_that_have_more_that_allowed_transactions()
     {
+        // given
         final TransactionGenerator generator = new TransactionGenerator(CONFIG);
 
         final List<Long> whitelisted = generator.chooseWhitelisted(WHITELISTED_COUNT);
