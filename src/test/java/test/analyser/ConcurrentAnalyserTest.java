@@ -1,7 +1,6 @@
 package test.analyser;
 
 import static com.google.common.collect.Lists.newArrayList;
-import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertThat;
 import static solution.PredicateFactory.belongsTo;
@@ -42,14 +41,14 @@ public class ConcurrentAnalyserTest {
         final Iterator<Transaction> transactions = generator.generateIterator(NUMBER_OF_TRANSACTIONS);
 
         // when
-        final long count = newArrayList(transactions)
+        final List<Transaction> suspiciousIndividually = newArrayList(transactions)
                 .stream()
                 .filter(skipAnalysis.negate())
                 .filter(suspectIndividually)
-                .count();
+                .collect(Collectors.toList());
 
         // then
-        assertThat(count, equalTo(33339L));
+        assertThat(suspiciousIndividually, hasSize(33339));
     }
 
     @Test
