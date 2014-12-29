@@ -10,6 +10,7 @@ import static test.analyser.TestGeneratorSettings.ACCOUNT_COUNT;
 import static test.analyser.TestGeneratorSettings.BLACKLISTED_COUNT;
 import static test.analyser.TestGeneratorSettings.CONFIG;
 import static test.analyser.TestGeneratorSettings.DUE_DAY;
+import static test.analyser.TestGeneratorSettings.MAX_ALLOWED_FROM_ACCOUNT;
 import static test.analyser.TestGeneratorSettings.NUMBER_OF_TRANSACTIONS;
 import static test.analyser.TestGeneratorSettings.WHITELISTED_COUNT;
 
@@ -29,46 +30,77 @@ public class ConcurrentAnalyserTest {
     @Test
     public void individual_suspicious()
     {
-	// given
-	final TransactionGenerator generator = new TransactionGenerator(CONFIG);
+        // given
+        final TransactionGenerator generator = new TransactionGenerator(CONFIG);
 
-	final List<Long> blacklisted = generator.chooseBlacklisted(BLACKLISTED_COUNT);
-	final Predicate<Transaction> suspectIndividually = belongsTo(blacklisted);
+        final List<Long> blacklisted = generator.chooseBlacklisted(BLACKLISTED_COUNT);
+        final Predicate<Transaction> suspectIndividually = belongsTo(blacklisted);
 
-	final List<Long> whitelisted = generator.chooseWhitelisted(WHITELISTED_COUNT);
-	final Predicate<Transaction> skipAnalysis = belongsTo(whitelisted).or(sameDate(DUE_DAY).negate());
+        final List<Long> whitelisted = generator.chooseWhitelisted(WHITELISTED_COUNT);
+        final Predicate<Transaction> skipAnalysis = belongsTo(whitelisted).or(sameDate(DUE_DAY).negate());
 
-	final Iterator<Transaction> transactions = generator.generateIterator(NUMBER_OF_TRANSACTIONS);
+        final Iterator<Transaction> transactions = generator.generateIterator(NUMBER_OF_TRANSACTIONS);
 
-	// when
-	final long count = newArrayList(transactions)
-		.stream()
-		.filter(skipAnalysis.negate())
-		.filter(suspectIndividually)
-		.count();
+        // when
+        final long count = newArrayList(transactions)
+                .stream()
+                .filter(skipAnalysis.negate())
+                .filter(suspectIndividually)
+                .count();
 
-	// then
-	assertThat(count, equalTo(33339L));
+        // then
+        assertThat(count, equalTo(33339L));
     }
 
     @Test
     public void transactions_from_account()
     {
-	final TransactionGenerator generator = new TransactionGenerator(CONFIG);
+        final TransactionGenerator generator = new TransactionGenerator(CONFIG);
 
-	final List<Long> whitelisted = generator.chooseWhitelisted(WHITELISTED_COUNT);
-	final Predicate<Transaction> skipAnalysis = belongsTo(whitelisted).or(sameDate(DUE_DAY).negate());
+        final List<Long> whitelisted = generator.chooseWhitelisted(WHITELISTED_COUNT);
+        final Predicate<Transaction> skipAnalysis = belongsTo(whitelisted).or(sameDate(DUE_DAY).negate());
 
-	final Iterator<Transaction> result = generator.generateIterator(NUMBER_OF_TRANSACTIONS);
-	final List<Transaction> transactions = newArrayList(result);
+        final Iterator<Transaction> result = generator.generateIterator(NUMBER_OF_TRANSACTIONS);
+        final List<Transaction> transactions = newArrayList(result);
 
-	// when
-	final Map<Long, List<Transaction>> transactionsPerFromAccount = transactions
-		.stream()
-		.filter(skipAnalysis.negate())
-		.collect(Collectors.groupingBy(Transaction::getAccountFromId));
+        // when
+        final Map<Long, List<Transaction>> transactionsPerFromAccount = transactions
+                .stream()
+                .filter(skipAnalysis.negate())
+                .collect(Collectors.groupingBy(Transaction::getAccountFromId));
 
-	// then
-	assertThat(transactionsPerFromAccount.keySet(), hasSize(ACCOUNT_COUNT - 1));
+        // then
+        assertThat(transactionsPerFromAccount.keySet(), hasSize(ACCOUNT_COUNT - 1));
+    }
+
+    @Test
+    public void transactions_from_accounts_that_have_more_that_allowed_transactions()
+    {
+        final TransactionGenerator generator = new TransactionGenerator(CONFIG);
+
+        final List<Long> whitelisted = generator.chooseWhitelisted(WHITELISTED_COUNT);
+        final Predicate<Transaction> skipAnalysis = belongsTo(whitelisted).or(sameDate(DUE_DAY).negate());
+
+        final Iterator<Transaction> result = generator.generateIterator(NUMBER_OF_TRANSACTIONS);
+        final List<Transaction> transactions = newArrayList(result);
+
+        // when
+        final Map<Long, List<Transaction>> transactionsPerFromAccount = transactions
+                .stream()
+                .filter(skipAnalysis.negate())
+                .collect(
+                        Collectors.groupingBy(
+                                Transaction::getAccountFromId
+                                )
+                );
+
+        final List<Transaction> transactionsFromOverusedAccounts = transactionsPerFromAccount.values()
+                .stream()
+                .filter(list -> list.size() > MAX_ALLOWED_FROM_ACCOUNT)
+                .flatMap(List::stream)
+                .collect(Collectors.toList());
+
+        // then
+        assertThat(transactionsFromOverusedAccounts, hasSize(6029));
     }
 }
