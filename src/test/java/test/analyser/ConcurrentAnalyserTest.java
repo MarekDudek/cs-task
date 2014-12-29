@@ -10,6 +10,7 @@ import static test.analyser.TestGeneratorSettings.BLACKLISTED_COUNT;
 import static test.analyser.TestGeneratorSettings.CONFIG;
 import static test.analyser.TestGeneratorSettings.DUE_DAY;
 import static test.analyser.TestGeneratorSettings.MAX_ALLOWED_FROM_ACCOUNT;
+import static test.analyser.TestGeneratorSettings.MAX_ALLOWED_TO_ACCOUNT_BY_USER;
 import static test.analyser.TestGeneratorSettings.NUMBER_OF_TRANSACTIONS;
 import static test.analyser.TestGeneratorSettings.WHITELISTED_COUNT;
 
@@ -41,14 +42,14 @@ public class ConcurrentAnalyserTest {
         final Iterator<Transaction> transactions = generator.generateIterator(NUMBER_OF_TRANSACTIONS);
 
         // when
-        final List<Transaction> suspiciousIndividually = newArrayList(transactions)
+        final List<Transaction> suspicious = newArrayList(transactions)
                 .stream()
                 .filter(skipAnalysis.negate())
                 .filter(suspectIndividually)
                 .collect(Collectors.toList());
 
         // then
-        assertThat(suspiciousIndividually, hasSize(33339));
+        assertThat(suspicious, hasSize(33339));
     }
 
     @Test
@@ -95,14 +96,14 @@ public class ConcurrentAnalyserTest {
                                 )
                 );
 
-        final List<Transaction> transactionsFromOverusedAccounts = transactionsPerFromAccount.values()
+        final List<Transaction> suspicious = transactionsPerFromAccount.values()
                 .stream()
                 .filter(list -> list.size() > MAX_ALLOWED_FROM_ACCOUNT)
                 .flatMap(List::stream)
                 .collect(Collectors.toList());
 
         // then
-        assertThat(transactionsFromOverusedAccounts, hasSize(6029));
+        assertThat(suspicious, hasSize(6029));
     }
 
     @Test
@@ -127,6 +128,18 @@ public class ConcurrentAnalyserTest {
                                 )
                 );
 
+        // then
         assertThat(transactionsPerToAccountPerUser.keySet(), hasSize(ACCOUNT_COUNT - 1));
+
+        // when
+        final List<Transaction> suspicious = transactionsPerToAccountPerUser.values()
+                .stream()
+                .flatMap(userMap -> userMap.values().stream())
+                .filter(list -> list.size() > MAX_ALLOWED_TO_ACCOUNT_BY_USER)
+                .flatMap(List::stream)
+                .collect(Collectors.toList());
+
+        // then
+        assertThat(suspicious, hasSize(145));
     }
 }
