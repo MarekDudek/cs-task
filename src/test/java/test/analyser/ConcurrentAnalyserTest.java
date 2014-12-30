@@ -23,7 +23,6 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.javatuples.Pair;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import solution.transactions.TransactionGenerator;
@@ -147,7 +146,6 @@ public class ConcurrentAnalyserTest {
         assertThat(suspicious, hasSize(145));
     }
 
-    @Ignore
     @Test
     public void transactions_from_user_that_count_and_total_above_thresholds()
     {
@@ -163,31 +161,32 @@ public class ConcurrentAnalyserTest {
 
         // when
         final Map<Long, List<Transaction>> transactionsPerUser = transactions.stream()
-                .filter(skipAnalysis)
+                .filter(skipAnalysis.negate())
                 .collect(Collectors.groupingBy(Transaction::getUserId));
 
-        final Predicate<List<Transaction>> transactionsPredicate = new Predicate<List<Transaction>>() {
+        final Predicate<List<Transaction>> sumTotalAndCountBothExceedAnyOfThresholds = new Predicate<List<Transaction>>() {
             @Override
             public boolean test(final List<Transaction> transactions)
             {
                 final long count = transactions.stream()
                         .count();
-                final BigDecimal sum = transactions.stream()
-                        .map(transaction -> transaction.getAmount())
+                final BigDecimal sumTotal = transactions.stream()
+                        .map(Transaction::getAmount)
                         .reduce(BigDecimal::add)
                         .get();
 
-                final Predicate<Pair<Integer, BigDecimal>> countAbove = pair -> count > pair.getValue0();
-                final Predicate<Pair<Integer, BigDecimal>> sumAbove = pair -> sum.compareTo(pair.getValue1()) > 0;
+                final Predicate<Pair<Integer, BigDecimal>> countAbove =
+                        pair -> count > pair.getValue0();
+                final Predicate<Pair<Integer, BigDecimal>> sumAbove =
+                        pair -> sumTotal.compareTo(pair.getValue1()) > 0;
 
-                return THRESHOLDS.stream()
-                        .anyMatch(countAbove.and(sumAbove));
+                return THRESHOLDS.stream().anyMatch(countAbove.and(sumAbove));
             }
         };
 
         final List<Transaction> suspicious = transactionsPerUser.values()
                 .stream()
-                .filter(transactionsPredicate)
+                .filter(sumTotalAndCountBothExceedAnyOfThresholds)
                 .flatMap(List::stream)
                 .collect(Collectors.toList());
 
