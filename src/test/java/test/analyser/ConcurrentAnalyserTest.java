@@ -12,14 +12,18 @@ import static test.analyser.TestGeneratorSettings.DUE_DAY;
 import static test.analyser.TestGeneratorSettings.MAX_ALLOWED_FROM_ACCOUNT;
 import static test.analyser.TestGeneratorSettings.MAX_ALLOWED_TO_ACCOUNT_BY_USER;
 import static test.analyser.TestGeneratorSettings.NUMBER_OF_TRANSACTIONS;
+import static test.analyser.TestGeneratorSettings.THRESHOLDS;
 import static test.analyser.TestGeneratorSettings.WHITELISTED_COUNT;
 
+import java.math.BigDecimal;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import org.javatuples.Pair;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import solution.transactions.TransactionGenerator;
@@ -141,5 +145,53 @@ public class ConcurrentAnalyserTest {
 
         // then
         assertThat(suspicious, hasSize(145));
+    }
+
+    @Ignore
+    @Test
+    public void transactions_from_user_that_count_and_total_above_thresholds()
+    {
+
+        // given
+        final TransactionGenerator generator = new TransactionGenerator(CONFIG);
+
+        final List<Long> whitelisted = generator.chooseWhitelisted(WHITELISTED_COUNT);
+        final Predicate<Transaction> skipAnalysis = belongsTo(whitelisted).or(sameDate(DUE_DAY).negate());
+
+        final Iterator<Transaction> result = generator.generateIterator(NUMBER_OF_TRANSACTIONS);
+        final List<Transaction> transactions = newArrayList(result);
+
+        // when
+        final Map<Long, List<Transaction>> transactionsPerUser = transactions.stream()
+                .filter(skipAnalysis)
+                .collect(Collectors.groupingBy(Transaction::getUserId));
+
+        final Predicate<List<Transaction>> transactionsPredicate = new Predicate<List<Transaction>>() {
+            @Override
+            public boolean test(final List<Transaction> transactions)
+            {
+                final long count = transactions.stream()
+                        .count();
+                final BigDecimal sum = transactions.stream()
+                        .map(transaction -> transaction.getAmount())
+                        .reduce(BigDecimal::add)
+                        .get();
+
+                final Predicate<Pair<Integer, BigDecimal>> countAbove = pair -> count > pair.getValue0();
+                final Predicate<Pair<Integer, BigDecimal>> sumAbove = pair -> sum.compareTo(pair.getValue1()) > 0;
+
+                return THRESHOLDS.stream()
+                        .anyMatch(countAbove.and(sumAbove));
+            }
+        };
+
+        final List<Transaction> suspicious = transactionsPerUser.values()
+                .stream()
+                .filter(transactionsPredicate)
+                .flatMap(List::stream)
+                .collect(Collectors.toList());
+
+        // then
+        assertThat(suspicious, hasSize(6700));
     }
 }
