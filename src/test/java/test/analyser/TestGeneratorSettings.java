@@ -8,10 +8,12 @@ import java.math.BigDecimal;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.function.Predicate;
 
 import org.javatuples.Pair;
 
 import solution.transactions.TransactionGeneratorConfig;
+import test.transactions.Transaction;
 
 public final class TestGeneratorSettings {
 
@@ -50,8 +52,18 @@ public final class TestGeneratorSettings {
                     Pair.with(6699, new BigDecimal(3_685_272))
             );
 
+    public static final int VERY_BIG_NUMBER = 1_000_000_000;
+
     /** Number of transactions to generate. */
     public static final int NUMBER_OF_TRANSACTIONS = 1_000_000;
+
+    public static final int EXPECTED_NUMBER_OF_ALL_SUSPICIOUS = 33426;
+    public static final int SUSPICIOUS_INDIVIDUALLY_COUNT = 33426;
+    public static final int EXCEEDING_COUNT_FROM_ACCOUNT = 0;
+    public static final int EXCEEDING_COUNT_TO_ACCOUNT_BY_USER = 0;
+    public static final int EXCEEDING_ANY_THRESHOLD_OF_COUNT_AND_TOTAL_AMOUNT = 0;
+
+    public static final Predicate<Transaction> ALWAYS_FAIL = transaction -> false;
 
     private TestGeneratorSettings() {
         super();

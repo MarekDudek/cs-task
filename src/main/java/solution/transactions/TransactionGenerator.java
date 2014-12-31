@@ -1,6 +1,5 @@
 package solution.transactions;
 
-import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Lists.newArrayListWithCapacity;
 
 import java.math.BigDecimal;
@@ -10,14 +9,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
-import solution.utils.DateUtilities;
+import solution.utils.RichGenerator;
 import test.transactions.Transaction;
-
-import com.google.common.annotations.VisibleForTesting;
 
 public class TransactionGenerator {
 
     private final Random generator;
+    private final RichGenerator richGenerator;
     private final int minId;
     private final int maxId;
     private final List<Long> users;
@@ -30,18 +28,19 @@ public class TransactionGenerator {
     public TransactionGenerator(final TransactionGeneratorConfig config)
     {
         generator = new Random(config.seed);
+        richGenerator = new RichGenerator();
 
         minId = config.minId;
         maxId = config.maxId;
 
         users = newArrayListWithCapacity(config.userCount);
         for (int i = 0; i < config.userCount; i++) {
-            users.add(randomBoundedLong(config.minId, config.maxId));
+            users.add(richGenerator.longBetweenInclusive(generator, config.minId, config.maxId));
         }
 
         accounts = newArrayListWithCapacity(config.accountCount);
         for (int i = 0; i < config.accountCount; i++) {
-            accounts.add(randomBoundedLong(config.minId, config.maxId));
+            accounts.add(richGenerator.longBetweenInclusive(generator, config.minId, config.maxId));
         }
 
         medianDate = new Date(config.medianDate.getTime());
@@ -91,75 +90,14 @@ public class TransactionGenerator {
     {
         final Transaction transaction = new Transaction();
 
-        transaction.setTransactionId(randomBoundedLong(minId, maxId));
+        transaction.setTransactionId(richGenerator.longBetweenInclusive(generator, minId, maxId));
         transaction.setUserId(randomUser(generator));
-        transaction.setDate(randomDate(medianDate, daysMargin));
+        transaction.setDate(richGenerator.dateAroundMedianWithMargins(generator, medianDate, daysMargin));
         transaction.setAccountFromId(randomAccount(generator));
         transaction.setAccountToId(randomAccount(generator));
-        transaction.setAmount(randomAmount(minAmount, maxAmount));
+        transaction.setAmount(richGenerator.decimalBetweenInclusive(generator, minAmount, maxAmount));
 
         return transaction;
-    }
-
-    @VisibleForTesting
-    Date randomDate(final Date median, final int margin)
-    {
-        final Date lowerBound = DateUtilities.startOfDayNDaysEarlier(median, margin);
-        final long lowerMillis = lowerBound.getTime();
-
-        final Date upperBound = DateUtilities.endOfDayNDaysLater(median, margin);
-        final long upperMillis = upperBound.getTime();
-
-        final long difference = upperMillis - lowerMillis;
-
-        final long randomMillis = lowerMillis + positiveLong() % difference;
-        final Date randomDate = new Date(randomMillis);
-
-        return randomDate;
-    }
-
-    private long randomBoundedLong(final int min, final int max)
-    {
-        final long positive = positiveLong();
-        final long difference = max - min;
-        final long nonNegativeBelowDifference = positive % difference;
-
-        final long insideInclusive = min + nonNegativeBelowDifference + 1;
-
-        checkState(min <= insideInclusive);
-        checkState(insideInclusive <= max);
-
-        return insideInclusive;
-    }
-
-    @VisibleForTesting
-    BigDecimal randomAmount(final BigDecimal min, final BigDecimal max)
-    {
-        final BigDecimal positive = positiveBigDecimal();
-        final BigDecimal difference = max.subtract(min);
-        final BigDecimal nonNegativeBelowDifference = positive.remainder(difference);
-
-        final BigDecimal insideInclusive = min.add(nonNegativeBelowDifference).add(BigDecimal.ONE);
-
-        checkState(min.compareTo(insideInclusive) <= 0);
-        checkState(max.compareTo(insideInclusive) >= 0);
-
-        return insideInclusive;
-    }
-
-    private long positiveLong()
-    {
-        long integer;
-        do {
-            integer = generator.nextLong();
-        } while (integer == 0 || integer == Long.MIN_VALUE);
-        final long positive = Math.abs(integer);
-        return positive;
-    }
-
-    private BigDecimal positiveBigDecimal()
-    {
-        return new BigDecimal(positiveLong());
     }
 
     private long randomUser(final Random generator)

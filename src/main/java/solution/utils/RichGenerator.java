@@ -50,16 +50,16 @@ public final class RichGenerator {
         return new BigDecimal(longBetweenInclusive);
     }
 
-    public Date randomDate(final Random generator, final Date median, final int margin)
+    public Date dateAroundMedianWithMargins(final Random generator, final Date median, final int margin)
     {
-        final long lowerMillis = DateUtilities.startOfDayNDaysEarlier(median, margin).getTime();
-        final long upperMillis = DateUtilities.endOfDayNDaysLater(median, margin).getTime();
+        final long lower = DateUtilities.startOfDayNDaysEarlier(median, margin).getTime();
+        final long upper = DateUtilities.endOfDayNDaysLater(median, margin).getTime();
 
-        final long difference = upperMillis - lowerMillis + 1;
+        final long span = upper - lower + 1;
 
-        final long randomMillis = lowerMillis + nonNegativeLong(generator) % difference;
-        final Date randomDate = new Date(randomMillis);
+        final long millis = lower + nonNegativeLong(generator) % span;
+        final Date date = new Date(millis);
 
-        return randomDate;
+        return date;
     }
 }

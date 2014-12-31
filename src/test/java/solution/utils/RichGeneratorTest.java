@@ -217,7 +217,7 @@ public class RichGeneratorTest {
                 .willReturn(ZERO);
 
         // when
-        final Date date = generator.randomDate(random, MEDIAN, MARGIN);
+        final Date date = generator.dateAroundMedianWithMargins(random, MEDIAN, MARGIN);
 
         // then
         assertThat(date, is(equalTo(LOWER_BOUND)));
@@ -230,7 +230,7 @@ public class RichGeneratorTest {
                 .willReturn((2 * MARGIN + 1) * MILLIS_PER_DAY - 1);
 
         // when
-        final Date date = generator.randomDate(random, MEDIAN, MARGIN);
+        final Date date = generator.dateAroundMedianWithMargins(random, MEDIAN, MARGIN);
 
         // then
         assertThat(date, is(equalTo(UPPER_BOUND)));
