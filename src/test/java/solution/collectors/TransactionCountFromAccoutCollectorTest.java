@@ -29,23 +29,23 @@ public class TransactionCountFromAccoutCollectorTest {
     @Test
     public void test()
     {
-	// given
-	final StatsCollector collector = new TransactionCountFromAccoutCollector(2);
+        // given
+        final StatsCollector collector = new TransactionCountFromAccoutCollector(2);
 
-	// when
-	collector.collect(TRANSACTION_1);
-	collector.collect(TRANSACTION_2);
-	collector.collect(TRANSACTION_3);
-	collector.collect(TRANSACTION_4);
-	collector.collect(TRANSACTION_5);
-	collector.collect(TRANSACTION_6);
+        // when
+        collector.collect(TRANSACTION_1);
+        collector.collect(TRANSACTION_2);
+        collector.collect(TRANSACTION_3);
+        collector.collect(TRANSACTION_4);
+        collector.collect(TRANSACTION_5);
+        collector.collect(TRANSACTION_6);
 
-	final Collection<Transaction> suspicious = collector.suspicious();
+        final Collection<Transaction> suspicious = collector.suspicious();
 
-	// then
-	assertThat(suspicious, hasSize(3));
-	assertThat(suspicious, hasItem(TRANSACTION_4));
-	assertThat(suspicious, hasItem(TRANSACTION_5));
-	assertThat(suspicious, hasItem(TRANSACTION_6));
+        // then
+        assertThat(suspicious, hasSize(3));
+        assertThat(suspicious, hasItem(TRANSACTION_4));
+        assertThat(suspicious, hasItem(TRANSACTION_5));
+        assertThat(suspicious, hasItem(TRANSACTION_6));
     }
 }

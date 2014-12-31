@@ -29,66 +29,66 @@ public class FilteringIteratorTest {
     @Before
     public void setup()
     {
-	// given
-	final Range<Integer> range = closed(1, 10);
-	final Set<Integer> set = create(range, integers());
-	numbers = set.iterator();
+        // given
+        final Range<Integer> range = closed(1, 10);
+        final Set<Integer> set = create(range, integers());
+        numbers = set.iterator();
 
-	even = number -> (number % 2) == 0;
+        even = number -> (number % 2) == 0;
     }
 
     @Test
     public void iteration_with_checking_if_next_exists()
     {
-	// when
-	iterator = new FilteringIterator<Integer>(numbers, even);
+        // when
+        iterator = new FilteringIterator<Integer>(numbers, even);
 
-	// then
-	assertThat(iterator.hasNext(), is(true));
-	assertThat(iterator.next(), is(equalTo(2)));
+        // then
+        assertThat(iterator.hasNext(), is(true));
+        assertThat(iterator.next(), is(equalTo(2)));
 
-	assertThat(iterator.hasNext(), is(true));
-	assertThat(iterator.next(), is(equalTo(4)));
+        assertThat(iterator.hasNext(), is(true));
+        assertThat(iterator.next(), is(equalTo(4)));
 
-	assertThat(iterator.hasNext(), is(true));
-	assertThat(iterator.next(), is(equalTo(6)));
+        assertThat(iterator.hasNext(), is(true));
+        assertThat(iterator.next(), is(equalTo(6)));
 
-	assertThat(iterator.hasNext(), is(true));
-	assertThat(iterator.next(), is(equalTo(8)));
+        assertThat(iterator.hasNext(), is(true));
+        assertThat(iterator.next(), is(equalTo(8)));
 
-	assertThat(iterator.hasNext(), is(true));
-	assertThat(iterator.next(), is(equalTo(10)));
+        assertThat(iterator.hasNext(), is(true));
+        assertThat(iterator.next(), is(equalTo(10)));
 
-	assertThat(iterator.hasNext(), is(false));
+        assertThat(iterator.hasNext(), is(false));
     }
 
     @Test
     public void iteration_without_checking_if_next_exists()
     {
-	// when
-	iterator = new FilteringIterator<Integer>(numbers, even);
+        // when
+        iterator = new FilteringIterator<Integer>(numbers, even);
 
-	// then
-	assertThat(iterator.next(), is(equalTo(2)));
-	assertThat(iterator.next(), is(equalTo(4)));
-	assertThat(iterator.next(), is(equalTo(6)));
-	assertThat(iterator.next(), is(equalTo(8)));
-	assertThat(iterator.next(), is(equalTo(10)));
+        // then
+        assertThat(iterator.next(), is(equalTo(2)));
+        assertThat(iterator.next(), is(equalTo(4)));
+        assertThat(iterator.next(), is(equalTo(6)));
+        assertThat(iterator.next(), is(equalTo(8)));
+        assertThat(iterator.next(), is(equalTo(10)));
 
-	assertThat(iterator.hasNext(), is(false));
+        assertThat(iterator.hasNext(), is(false));
     }
 
     @Test
     public void repeatedly_checking_if_next_exists()
     {
-	// when
-	iterator = new FilteringIterator<Integer>(numbers, even);
+        // when
+        iterator = new FilteringIterator<Integer>(numbers, even);
 
-	// then
-	for (int i = 0; i < 10; i++)
-	{
-	    // then
-	    assertThat(iterator.hasNext(), is(true));
-	}
+        // then
+        for (int i = 0; i < 10; i++)
+        {
+            // then
+            assertThat(iterator.hasNext(), is(true));
+        }
     }
 }

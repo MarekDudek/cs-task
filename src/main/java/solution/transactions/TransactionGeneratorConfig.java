@@ -20,24 +20,24 @@ public final class TransactionGeneratorConfig {
     public final BigDecimal maxAmount;
 
     public TransactionGeneratorConfig(
-	    final int seed,
-	    final int minId,
-	    final int maxId,
-	    final int userCount,
-	    final int accountCount,
-	    final Date medianDate,
-	    final int daysMargin,
-	    final BigDecimal minAmount,
-	    final BigDecimal maxAmount)
+            final int seed,
+            final int minId,
+            final int maxId,
+            final int userCount,
+            final int accountCount,
+            final Date medianDate,
+            final int daysMargin,
+            final BigDecimal minAmount,
+            final BigDecimal maxAmount)
     {
-	this.seed = seed;
-	this.minId = minId;
-	this.maxId = maxId;
-	this.userCount = userCount;
-	this.accountCount = accountCount;
-	this.medianDate = new Date(medianDate.getTime());
-	this.daysMargin = daysMargin;
-	this.minAmount = minAmount;
-	this.maxAmount = maxAmount;
+        this.seed = seed;
+        this.minId = minId;
+        this.maxId = maxId;
+        this.userCount = userCount;
+        this.accountCount = accountCount;
+        this.medianDate = new Date(medianDate.getTime());
+        this.daysMargin = daysMargin;
+        this.minAmount = minAmount;
+        this.maxAmount = maxAmount;
     }
 }

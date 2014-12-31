@@ -9,12 +9,12 @@ public class TransactionPrinter {
 
     public static void print(Iterator<Transaction> suspicious)
     {
-	while (suspicious.hasNext()) {
-	    System.out.println(suspicious.next());
-	}
+        while (suspicious.hasNext()) {
+            System.out.println(suspicious.next());
+        }
     }
 
     public static void print(List<Transaction> list) {
-	print(list.iterator());
+        print(list.iterator());
     }
 }

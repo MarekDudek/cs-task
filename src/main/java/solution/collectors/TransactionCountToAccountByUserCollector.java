@@ -17,40 +17,40 @@ public class TransactionCountToAccountByUserCollector implements StatsCollector 
 
     public TransactionCountToAccountByUserCollector(final int maximumAllowed)
     {
-	this.maximumAllowed = maximumAllowed;
+        this.maximumAllowed = maximumAllowed;
     }
 
     @Override
     public void collect(final Transaction transaction)
     {
-	final Long accountTo = transaction.getAccountToId();
-	final Long user = transaction.getUserId();
+        final Long accountTo = transaction.getAccountToId();
+        final Long user = transaction.getUserId();
 
-	final Pair<Long, Long> key = Pair.with(accountTo, user);
+        final Pair<Long, Long> key = Pair.with(accountTo, user);
 
-	Collection<Transaction> transactions = transactionsPerAccountToAndUser.get(key);
-	if (transactions == null) {
-	    transactions = newArrayList();
-	}
+        Collection<Transaction> transactions = transactionsPerAccountToAndUser.get(key);
+        if (transactions == null) {
+            transactions = newArrayList();
+        }
 
-	transactions.add(transaction);
-	transactionsPerAccountToAndUser.put(key, transactions);
+        transactions.add(transaction);
+        transactionsPerAccountToAndUser.put(key, transactions);
     }
 
     @Override
     public Collection<Transaction> suspicious()
     {
-	final Collection<Transaction> union = newArrayList();
+        final Collection<Transaction> union = newArrayList();
 
-	for (final Pair<Long, Long> key : transactionsPerAccountToAndUser.keySet())
-	{
-	    final Collection<Transaction> transactions = transactionsPerAccountToAndUser.get(key);
-	    if (transactions.size() > maximumAllowed)
-	    {
-		union.addAll(transactions);
-	    }
-	}
+        for (final Pair<Long, Long> key : transactionsPerAccountToAndUser.keySet())
+        {
+            final Collection<Transaction> transactions = transactionsPerAccountToAndUser.get(key);
+            if (transactions.size() > maximumAllowed)
+            {
+                union.addAll(transactions);
+            }
+        }
 
-	return union;
+        return union;
     }
 }

@@ -20,61 +20,61 @@ public class Transaction {
 
     @Override
     public String toString() {
-	return MoreObjects.toStringHelper(this)
-		.add("ID", transactionId)
-		.add("user", userId)
-		.add("date", transactionDate)
-		.add("from account", accountFromId)
-		.add("to account", accountToId)
-		.add("amount", amount)
-		.toString();
+        return MoreObjects.toStringHelper(this)
+                .add("ID", transactionId)
+                .add("user", userId)
+                .add("date", transactionDate)
+                .add("from account", accountFromId)
+                .add("to account", accountToId)
+                .add("amount", amount)
+                .toString();
     }
 
     public BigDecimal getAmount() {
-	return amount;
+        return amount;
     }
 
     public Long getUserId() {
-	return userId;
+        return userId;
     }
 
     public Long getTransactionId() {
-	return transactionId;
+        return transactionId;
     }
 
     public Long getAccountFromId() {
-	return accountFromId;
+        return accountFromId;
     }
 
     public Long getAccountToId() {
-	return accountToId;
+        return accountToId;
     }
 
     public Date getDate() {
-	return new Date(transactionDate.getTime());
+        return new Date(transactionDate.getTime());
     }
 
     public void setAmount(BigDecimal amount) {
-	this.amount = amount;
+        this.amount = amount;
     }
 
     public void setUserId(Long userId) {
-	this.userId = userId;
+        this.userId = userId;
     }
 
     public void setTransactionId(Long transactionId) {
-	this.transactionId = transactionId;
+        this.transactionId = transactionId;
     }
 
     public void setAccountFromId(Long accountFromId) {
-	this.accountFromId = accountFromId;
+        this.accountFromId = accountFromId;
     }
 
     public void setAccountToId(Long accountToId) {
-	this.accountToId = accountToId;
+        this.accountToId = accountToId;
     }
 
     public void setDate(Date date) {
-	this.transactionDate = new Date(date.getTime());
+        this.transactionDate = new Date(date.getTime());
     }
 }

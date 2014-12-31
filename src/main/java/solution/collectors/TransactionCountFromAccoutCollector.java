@@ -14,38 +14,38 @@ public class TransactionCountFromAccoutCollector implements StatsCollector {
     private final Map<Long, Collection<Transaction>> transactionsPerFromAccount = newHashMap();
 
     public TransactionCountFromAccoutCollector(final int maximumAllowed) {
-	this.maximumAllowed = maximumAllowed;
+        this.maximumAllowed = maximumAllowed;
     }
 
     @Override
     public void collect(final Transaction transaction)
     {
-	final Long accountFrom = transaction.getAccountFromId();
+        final Long accountFrom = transaction.getAccountFromId();
 
-	Collection<Transaction> transactions = transactionsPerFromAccount.get(accountFrom);
+        Collection<Transaction> transactions = transactionsPerFromAccount.get(accountFrom);
 
-	if (transactions == null) {
-	    transactions = newArrayList();
-	}
+        if (transactions == null) {
+            transactions = newArrayList();
+        }
 
-	transactions.add(transaction);
-	transactionsPerFromAccount.put(accountFrom, transactions);
+        transactions.add(transaction);
+        transactionsPerFromAccount.put(accountFrom, transactions);
     }
 
     @Override
     public Collection<Transaction> suspicious()
     {
-	final Collection<Transaction> union = newArrayList();
+        final Collection<Transaction> union = newArrayList();
 
-	for (final Long account : transactionsPerFromAccount.keySet())
-	{
-	    final Collection<Transaction> transactions = transactionsPerFromAccount.get(account);
-	    if (transactions.size() > maximumAllowed)
-	    {
-		union.addAll(transactions);
-	    }
-	}
+        for (final Long account : transactionsPerFromAccount.keySet())
+        {
+            final Collection<Transaction> transactions = transactionsPerFromAccount.get(account);
+            if (transactions.size() > maximumAllowed)
+            {
+                union.addAll(transactions);
+            }
+        }
 
-	return union;
+        return union;
     }
 }

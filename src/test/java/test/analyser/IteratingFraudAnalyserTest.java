@@ -29,77 +29,77 @@ public class IteratingFraudAnalyserTest {
     @Test(expected = NoSuchElementException.class)
     public void iteration_with_checking_if_next_exists()
     {
-	// given
+        // given
 
-	analyser = new IteratingFraudAnalyser(SKIP_ANALYSIS, SUSPECT_ALL, NULL_COLLECTOR);
+        analyser = new IteratingFraudAnalyser(SKIP_ANALYSIS, SUSPECT_ALL, NULL_COLLECTOR);
 
-	// when
-	final Iterator<Transaction> suspicious = analyser.analyse(VARIOUS_TRANSACTIONS.iterator(), null);
+        // when
+        final Iterator<Transaction> suspicious = analyser.analyse(VARIOUS_TRANSACTIONS.iterator(), null);
 
-	// then
-	assertThat(suspicious.hasNext(), is(true));
-	assertThat(suspicious.hasNext(), is(true));
-	assertThat(suspicious.next(), is(BLACKLISTED_USER_ON_DUE_DAY));
+        // then
+        assertThat(suspicious.hasNext(), is(true));
+        assertThat(suspicious.hasNext(), is(true));
+        assertThat(suspicious.next(), is(BLACKLISTED_USER_ON_DUE_DAY));
 
-	assertThat(suspicious.hasNext(), is(true));
-	assertThat(suspicious.hasNext(), is(true));
-	assertThat(suspicious.next(), is(REGULAR_USER_ON_DUE_DAY));
+        assertThat(suspicious.hasNext(), is(true));
+        assertThat(suspicious.hasNext(), is(true));
+        assertThat(suspicious.next(), is(REGULAR_USER_ON_DUE_DAY));
 
-	assertThat(suspicious.hasNext(), is(false));
-	assertThat(suspicious.hasNext(), is(false));
+        assertThat(suspicious.hasNext(), is(false));
+        assertThat(suspicious.hasNext(), is(false));
 
-	assertThat(suspicious.next(), any(Transaction.class));
+        assertThat(suspicious.next(), any(Transaction.class));
     }
 
     @Test(expected = NoSuchElementException.class)
     public void iteration_without_checking_if_next_exists()
     {
-	// given
-	analyser = new IteratingFraudAnalyser(SKIP_ANALYSIS, SUSPECT_ALL, NULL_COLLECTOR);
+        // given
+        analyser = new IteratingFraudAnalyser(SKIP_ANALYSIS, SUSPECT_ALL, NULL_COLLECTOR);
 
-	// when
-	final Iterator<Transaction> suspicious = analyser.analyse(VARIOUS_TRANSACTIONS.iterator(), null);
+        // when
+        final Iterator<Transaction> suspicious = analyser.analyse(VARIOUS_TRANSACTIONS.iterator(), null);
 
-	// then
-	assertThat(suspicious.next(), is(BLACKLISTED_USER_ON_DUE_DAY));
-	assertThat(suspicious.next(), is(REGULAR_USER_ON_DUE_DAY));
+        // then
+        assertThat(suspicious.next(), is(BLACKLISTED_USER_ON_DUE_DAY));
+        assertThat(suspicious.next(), is(REGULAR_USER_ON_DUE_DAY));
 
-	assertThat(suspicious.next(), any(Transaction.class));
+        assertThat(suspicious.next(), any(Transaction.class));
     }
 
     @Test(expected = NoSuchElementException.class)
     public void iteration_with_checking_if_next_exists__when_not_all_are_suspected()
     {
-	// given
+        // given
 
-	analyser = new IteratingFraudAnalyser(SKIP_ANALYSIS, SUSPECT_INDIVIDUALLY, NULL_COLLECTOR);
+        analyser = new IteratingFraudAnalyser(SKIP_ANALYSIS, SUSPECT_INDIVIDUALLY, NULL_COLLECTOR);
 
-	// when
-	final Iterator<Transaction> suspicious = analyser.analyse(VARIOUS_TRANSACTIONS.iterator(), null);
+        // when
+        final Iterator<Transaction> suspicious = analyser.analyse(VARIOUS_TRANSACTIONS.iterator(), null);
 
-	// then
-	assertThat(suspicious.hasNext(), is(true));
-	assertThat(suspicious.hasNext(), is(true));
-	assertThat(suspicious.next(), is(BLACKLISTED_USER_ON_DUE_DAY));
+        // then
+        assertThat(suspicious.hasNext(), is(true));
+        assertThat(suspicious.hasNext(), is(true));
+        assertThat(suspicious.next(), is(BLACKLISTED_USER_ON_DUE_DAY));
 
-	assertThat(suspicious.hasNext(), is(false));
-	assertThat(suspicious.hasNext(), is(false));
+        assertThat(suspicious.hasNext(), is(false));
+        assertThat(suspicious.hasNext(), is(false));
 
-	assertThat(suspicious.next(), any(Transaction.class));
+        assertThat(suspicious.next(), any(Transaction.class));
     }
 
     @Test(expected = NoSuchElementException.class)
     public void iteration_without_checking_if_next_exists__when_not_all_are_suspected()
     {
-	// given
-	analyser = new IteratingFraudAnalyser(SKIP_ANALYSIS, SUSPECT_INDIVIDUALLY, NULL_COLLECTOR);
+        // given
+        analyser = new IteratingFraudAnalyser(SKIP_ANALYSIS, SUSPECT_INDIVIDUALLY, NULL_COLLECTOR);
 
-	// when
-	final Iterator<Transaction> suspicious = analyser.analyse(VARIOUS_TRANSACTIONS.iterator(), null);
+        // when
+        final Iterator<Transaction> suspicious = analyser.analyse(VARIOUS_TRANSACTIONS.iterator(), null);
 
-	// then
-	assertThat(suspicious.next(), is(BLACKLISTED_USER_ON_DUE_DAY));
+        // then
+        assertThat(suspicious.next(), is(BLACKLISTED_USER_ON_DUE_DAY));
 
-	assertThat(suspicious.next(), any(Transaction.class));
+        assertThat(suspicious.next(), any(Transaction.class));
     }
 }

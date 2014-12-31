@@ -35,21 +35,21 @@ public class MultiStatCollectorTest {
     @Before
     public void setup()
     {
-	given(collector1.suspicious()).willReturn(newArrayList(transaction1, transaction2, transaction3));
-	given(collector2.suspicious()).willReturn(newArrayList(transaction2, transaction3, transaction4));
-	given(collector3.suspicious()).willReturn(newArrayList(transaction3, transaction4, transaction5));
+        given(collector1.suspicious()).willReturn(newArrayList(transaction1, transaction2, transaction3));
+        given(collector2.suspicious()).willReturn(newArrayList(transaction2, transaction3, transaction4));
+        given(collector3.suspicious()).willReturn(newArrayList(transaction3, transaction4, transaction5));
     }
 
     @Test
     public void elements_are_not_duplicated()
     {
-	// given
-	final MultiStatCollector collector = new MultiStatCollector(collector1, collector2, collector3);
+        // given
+        final MultiStatCollector collector = new MultiStatCollector(collector1, collector2, collector3);
 
-	// when
-	final Collection<Transaction> suspicious = collector.suspicious();
+        // when
+        final Collection<Transaction> suspicious = collector.suspicious();
 
-	// then
-	assertThat(suspicious, hasSize(5));
+        // then
+        assertThat(suspicious, hasSize(5));
     }
 }
