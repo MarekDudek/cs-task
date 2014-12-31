@@ -57,11 +57,12 @@ public final class TestGeneratorSettings {
     /** Number of transactions to generate. */
     public static final int NUMBER_OF_TRANSACTIONS = 1_000_000;
 
-    public static final int EXPECTED_NUMBER_OF_ALL_SUSPICIOUS = 33426;
-    public static final int SUSPICIOUS_INDIVIDUALLY_COUNT = 33426;
-    public static final int EXCEEDING_COUNT_FROM_ACCOUNT = 0;
-    public static final int EXCEEDING_COUNT_TO_ACCOUNT_BY_USER = 0;
-    public static final int EXCEEDING_ANY_THRESHOLD_OF_COUNT_AND_TOTAL_AMOUNT = 0;
+    // Result counts
+    public static final int EXPECTED_NUMBER_OF_ALL_SUSPICIOUS = 33_426;
+    public static final int SUSPICIOUS_INDIVIDUALLY_COUNT = 33_426;
+    public static final int EXCEEDING_COUNT_FROM_ACCOUNT = 5_986;
+    public static final int EXCEEDING_COUNT_BY_USER_TO_ACCOUNT = 338;
+    public static final int EXCEEDING_ANY_THRESHOLD_OF_COUNT_AND_TOTAL_AMOUNT = 10_387;
 
     public static final Predicate<Transaction> ALWAYS_FAIL = transaction -> false;
 
