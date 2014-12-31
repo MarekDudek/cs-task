@@ -19,15 +19,18 @@ public class LambdaAnalyser extends FraudAnalyser {
     private final Predicate<Transaction> skipAnalysis;
     private final Predicate<Transaction> suspectIndividually;
     private final int maxAllowedFromAccount;
+    private final int maxAllowedByUserToAccount;
 
     public LambdaAnalyser(
             final Predicate<Transaction> skipAnalysis,
             final Predicate<Transaction> suspectIndividually,
-            final int maxAllowedFromAccount)
+            final int maxAllowedFromAccount,
+            final int maxAllowedByUserToAccount)
     {
         this.skipAnalysis = checkNotNull(skipAnalysis);
         this.suspectIndividually = checkNotNull(suspectIndividually);
         this.maxAllowedFromAccount = maxAllowedFromAccount;
+        this.maxAllowedByUserToAccount = maxAllowedByUserToAccount;
     }
 
     @Override
@@ -36,11 +39,12 @@ public class LambdaAnalyser extends FraudAnalyser {
         final List<Transaction> all = newArrayList(transactions);
         final List<Transaction> toAnalyse = toAnalyse(all);
 
-        final List<Transaction> suspiciousIndividually = suspiciousIndividually(toAnalyse);
-        final List<Transaction> suspiciousBasedOnCountFromAccount = suspiciousBasedOnCountFromAccount(toAnalyse);
+        final List<Transaction> individually = suspiciousIndividually(toAnalyse);
+        final List<Transaction> basedOnCountFromAccount = suspiciousBasedOnCountFromAccount(toAnalyse);
+        final List<Transaction> basedOnCountByUserToAccount = suspiciousBasedOnCountByUserToAccount(toAnalyse);
 
-        final List<Transaction> union = distinctElements(suspiciousIndividually, suspiciousBasedOnCountFromAccount);
-        return union.iterator();
+        final List<Transaction> suspicious = distinctElements(individually, basedOnCountFromAccount, basedOnCountByUserToAccount);
+        return suspicious.iterator();
     }
 
     @SafeVarargs
@@ -80,6 +84,27 @@ public class LambdaAnalyser extends FraudAnalyser {
         final List<Transaction> suspicious = grouppedByFromAccount.values()
                 .stream()
                 .filter(list -> list.size() > maxAllowedFromAccount)
+                .flatMap(List::stream)
+                .collect(Collectors.toList());
+
+        return suspicious;
+    }
+
+    private List<Transaction> suspiciousBasedOnCountByUserToAccount(List<Transaction> transactions)
+    {
+        final Map<Long, Map<Long, List<Transaction>>> grouppedByUserAndToAccount = transactions.stream()
+                .collect(
+                        Collectors.groupingBy(
+                                Transaction::getUserId,
+                                Collectors.groupingBy(
+                                        Transaction::getAccountToId
+                                        )
+                                )
+                );
+
+        final List<Transaction> suspicious = grouppedByUserAndToAccount.values().stream()
+                .flatMap(byToAccountMap -> byToAccountMap.values().stream())
+                .filter(list -> list.size() > maxAllowedByUserToAccount)
                 .flatMap(List::stream)
                 .collect(Collectors.toList());
 

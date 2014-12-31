@@ -69,7 +69,7 @@ public class ConcurrentAnalyserTest {
 
         final Iterator<Transaction> transactions = generator.generateIterator(NUMBER_OF_TRANSACTIONS);
 
-        final FraudAnalyser analyser = new LambdaAnalyser(skipAnalysis, suspectIndividually, 1_000_000);
+        final FraudAnalyser analyser = new LambdaAnalyser(skipAnalysis, suspectIndividually, 1_000_000, 1_000_000);
 
         // when
         final Iterator<Transaction> suspicious = analyser.analyse(transactions, DUE_DAY);
@@ -144,7 +144,7 @@ public class ConcurrentAnalyserTest {
         final Iterator<Transaction> transactions = generator.generateIterator(NUMBER_OF_TRANSACTIONS);
 
         // when
-        final FraudAnalyser analyser = new LambdaAnalyser(skipAnalysis, transaction -> false, MAX_ALLOWED_FROM_ACCOUNT);
+        final FraudAnalyser analyser = new LambdaAnalyser(skipAnalysis, transaction -> false, MAX_ALLOWED_FROM_ACCOUNT, 1_000_000);
         final Iterator<Transaction> suspicious = analyser.analyse(transactions, DUE_DAY);
 
         // then
@@ -186,6 +186,25 @@ public class ConcurrentAnalyserTest {
 
         // then
         assertThat(suspicious, hasSize(145));
+    }
+
+    @Test
+    public void transactions_to_account_by_user__lambda_analyser()
+    {
+        // given
+        final TransactionGenerator generator = new TransactionGenerator(CONFIG);
+
+        final List<Long> whitelisted = generator.chooseWhitelisted(WHITELISTED_COUNT);
+        final Predicate<Transaction> skipAnalysis = belongsTo(whitelisted).or(sameDate(DUE_DAY).negate());
+
+        final Iterator<Transaction> result = generator.generateIterator(NUMBER_OF_TRANSACTIONS);
+
+        // when
+        final FraudAnalyser analyser = new LambdaAnalyser(skipAnalysis, transaction -> false, 1_000_000, MAX_ALLOWED_TO_ACCOUNT_BY_USER);
+        final Iterator<Transaction> suspicious = analyser.analyse(result, DUE_DAY);
+
+        // then
+        assertThat(newArrayList(suspicious), hasSize(145));
     }
 
     @Test
