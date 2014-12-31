@@ -166,18 +166,15 @@ public class ConcurrentAnalyserTest {
 
         final List<Transaction> suspicious = transactionsPerUser.values()
                 .stream()
-                .filter(list -> {
-                    final long count = list.stream().count();
-                    final Predicate<Pair<Integer, BigDecimal>> countExceeded =
-                            countAndSumTotal -> count > countAndSumTotal.getValue0();
-                    final BigDecimal sumTotal = list.stream()
-                            .map(Transaction::getAmount)
-                            .reduce(BigDecimal.ZERO, BigDecimal::add);
-                    final Predicate<Pair<Integer, BigDecimal>> sumExceeded =
-                            countAndSum -> sumTotal.compareTo(countAndSum.getValue1()) > 0;
-                    return THRESHOLDS.stream()
-                            .anyMatch(countExceeded.and(sumExceeded));
-                })
+                .filter(list -> THRESHOLDS.stream()
+                        .anyMatch(
+                                ((Predicate<Pair<Integer, BigDecimal>>)
+                                countAndSumTotal -> list.stream().count() > countAndSumTotal.getValue0())
+                                        .and((Predicate<Pair<Integer, BigDecimal>>)
+                                        countAndSum -> list.stream()
+                                                .map(Transaction::getAmount)
+                                                .reduce(BigDecimal.ZERO, BigDecimal::add).compareTo(countAndSum.getValue1()) > 0))
+                )
                 .flatMap(List::stream)
                 .collect(Collectors.toList());
 
