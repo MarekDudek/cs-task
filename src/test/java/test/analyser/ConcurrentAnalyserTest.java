@@ -69,7 +69,7 @@ public class ConcurrentAnalyserTest {
 
         final Iterator<Transaction> transactions = generator.generateIterator(NUMBER_OF_TRANSACTIONS);
 
-        final FraudAnalyser analyser = new LambdaAnalyser(skipAnalysis, suspectIndividually);
+        final FraudAnalyser analyser = new LambdaAnalyser(skipAnalysis, suspectIndividually, 1_000_000);
 
         // when
         final Iterator<Transaction> suspicious = analyser.analyse(transactions, DUE_DAY);
