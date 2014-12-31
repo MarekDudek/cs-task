@@ -49,7 +49,7 @@ public class RichGeneratorTest {
     }
 
     @Test
-    public void min_long_value_is_absolute_of_itself__however_strange_it_may_sound()
+    public void min_long_value_is_absolute_of_itself__however_strange_it_may_seem()
     {
         assertThat(Long.MIN_VALUE, is(equalTo(Math.abs(Long.MIN_VALUE))));
     }

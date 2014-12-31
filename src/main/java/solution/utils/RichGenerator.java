@@ -6,10 +6,11 @@ public class RichGenerator {
 
     public long positiveLong(final Random generator)
     {
-        long integer;
-        do {
-            integer = generator.nextLong();
-        } while (integer == 0 || integer == Long.MIN_VALUE);
-        return Math.abs(integer);
+        while (true) {
+            final long integer = generator.nextLong();
+            if (integer != 0 && integer != Long.MIN_VALUE) {
+                return Math.abs(integer);
+            }
+        }
     }
 }
