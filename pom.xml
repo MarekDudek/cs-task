@@ -6,7 +6,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>biz.interretis</groupId>
 	<artifactId>creditsuisse</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>1.4.1</version>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
