@@ -94,7 +94,7 @@ public class RichGeneratorTest {
                 .willReturn(ONE);
 
         // when
-        final BigDecimal decimal = generator.positiveBigDecimal(random);
+        final BigDecimal decimal = generator.positiveDecimal(random);
 
         // then
         assertThat(decimal, is(equalTo(BigDecimal.ONE)));
@@ -140,5 +140,33 @@ public class RichGeneratorTest {
 
         // then
         assertThat(number, is(equalTo(TEN)));
+    }
+
+    @Test
+    public void lower_bound_can_be_returned__for_decimal()
+    {
+        // given
+        given(random.nextLong())
+                .willReturn(ZERO);
+
+        // when
+        final BigDecimal decimal = generator.decimalBetweenInclusive(random, new BigDecimal(100), new BigDecimal(300));
+
+        // then
+        assertThat(decimal, is(equalTo(new BigDecimal(100))));
+    }
+
+    @Test
+    public void upper_bound_can_be_returned__for_decimal()
+    {
+        // given
+        given(random.nextLong())
+                .willReturn(200L);
+
+        // when
+        final BigDecimal decimal = generator.decimalBetweenInclusive(random, new BigDecimal(100), new BigDecimal(300));
+
+        // then
+        assertThat(decimal, is(equalTo(new BigDecimal(300))));
     }
 }

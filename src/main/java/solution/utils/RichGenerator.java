@@ -29,7 +29,7 @@ public class RichGenerator {
         }
     }
 
-    public BigDecimal positiveBigDecimal(final Random generator)
+    public BigDecimal positiveDecimal(final Random generator)
     {
         final long positive = positiveLong(generator);
         return new BigDecimal(positive);
@@ -41,5 +41,11 @@ public class RichGenerator {
         final long span = upperBound - lowerBound + 1;
 
         return lowerBound + nonNegative % span;
+    }
+
+    public BigDecimal decimalBetweenInclusive(final Random generator, final BigDecimal lowerBound, final BigDecimal upperBound)
+    {
+        final long longBetweenInclusive = longBetweenInclusive(generator, lowerBound.longValue(), upperBound.longValue());
+        return new BigDecimal(longBetweenInclusive);
     }
 }
