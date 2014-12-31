@@ -120,11 +120,12 @@ public class LambdaAnalyser extends FraudAnalyser {
                 .filter(list -> thresholds.stream()
                         .anyMatch(
                                 ((Predicate<Pair<Integer, BigDecimal>>) 
-                                        countAndTotalAmount -> list.stream().count() > countAndTotalAmount.getValue0()
+                                        countAndTotalAmount -> list.stream()
+                                                .count() > countAndTotalAmount.getValue0()
                                 ).and((Predicate<Pair<Integer, BigDecimal>>)
                                         countAndTotalAmount -> list.stream()
-                                            .map(Transaction::getAmount)
-                                            .reduce(BigDecimal.ZERO, BigDecimal::add).compareTo(countAndTotalAmount.getValue1()) > 0
+                                                .map(Transaction::getAmount)
+                                                .reduce(BigDecimal.ZERO, BigDecimal::add).compareTo(countAndTotalAmount.getValue1()) > 0
                                 )
                          )
                 )
