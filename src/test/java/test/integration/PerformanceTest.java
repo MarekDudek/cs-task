@@ -117,7 +117,7 @@ public class PerformanceTest {
         final List<Long> blacklisted = generator.chooseBlacklisted(BLACKLISTED_COUNT);
         final Predicate<Transaction> suspectIndividually = belongsTo(blacklisted);
 
-        final FraudAnalyser analyser = new LambdaAnalyser(skipAnalysis, suspectIndividually, 0);
+        final FraudAnalyser analyser = new LambdaAnalyser(skipAnalysis, suspectIndividually, MAX_ALLOWED_FROM_ACCOUNT);
 
         // when
         final Iterator<Transaction> transactions = generator.generateIterator(NUMBER_OF_TRANSACTIONS);

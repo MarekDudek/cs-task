@@ -133,6 +133,25 @@ public class ConcurrentAnalyserTest {
     }
 
     @Test
+    public void transactions_from_accounts_that_have_more_that_allowed_transactions__lambda_analyser()
+    {
+        // given
+        final TransactionGenerator generator = new TransactionGenerator(CONFIG);
+
+        final List<Long> whitelisted = generator.chooseWhitelisted(WHITELISTED_COUNT);
+        final Predicate<Transaction> skipAnalysis = belongsTo(whitelisted).or(sameDate(DUE_DAY).negate());
+
+        final Iterator<Transaction> transactions = generator.generateIterator(NUMBER_OF_TRANSACTIONS);
+
+        // when
+        final FraudAnalyser analyser = new LambdaAnalyser(skipAnalysis, transaction -> false, MAX_ALLOWED_FROM_ACCOUNT);
+        final Iterator<Transaction> suspicious = analyser.analyse(transactions, DUE_DAY);
+
+        // then
+        assertThat(newArrayList(suspicious), hasSize(6029));
+    }
+
+    @Test
     public void transactions_to_account_by_user()
     {
         // given

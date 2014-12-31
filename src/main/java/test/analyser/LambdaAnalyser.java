@@ -53,13 +53,13 @@ public class LambdaAnalyser extends FraudAnalyser {
         return newArrayList(union);
     }
 
-    private List<Transaction> toAnalyse(final List<Transaction> all)
+    private List<Transaction> toAnalyse(final List<Transaction> transactions)
     {
-        final List<Transaction> transactions = all.stream()
+        final List<Transaction> toAnalyse = transactions.stream()
                 .filter(skipAnalysis.negate())
                 .collect(Collectors.toList());
 
-        return transactions;
+        return toAnalyse;
     }
 
     private List<Transaction> suspiciousIndividually(final List<Transaction> transactions)
