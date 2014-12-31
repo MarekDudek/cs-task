@@ -15,8 +15,12 @@ import org.junit.Test;
 public class RichGeneratorTest {
 
     private static final long ZERO = 0L;
+
     private static final long ONE = 1L;
     private static final long MINUS_ONE = -1L;
+
+    private static final long TEN = 10L;
+    private static final long MINUS_TEN = -10L;
 
     /** System under test. */
     private RichGenerator generator;
@@ -94,5 +98,47 @@ public class RichGeneratorTest {
 
         // then
         assertThat(decimal, is(equalTo(BigDecimal.ONE)));
+    }
+
+    @Test
+    public void lower_bound_can_be_returned()
+    {
+        // given
+        given(random.nextLong())
+                .willReturn(ZERO);
+
+        // when
+        final long number = generator.longBetweenInclusive(random, MINUS_TEN, TEN);
+
+        // then
+        assertThat(number, is(equalTo(MINUS_TEN)));
+    }
+
+    @Test
+    public void upper_bound_can_be_returned()
+    {
+        // given
+        given(random.nextLong())
+                .willReturn(20L);
+
+        // when
+        final long number = generator.longBetweenInclusive(random, MINUS_TEN, TEN);
+
+        // then
+        assertThat(number, is(equalTo(TEN)));
+    }
+
+    @Test
+    public void upper_bound_can_be_returned__when_negative_value_returned_from_random()
+    {
+        // given
+        given(random.nextLong())
+                .willReturn(-20L);
+
+        // when
+        final long number = generator.longBetweenInclusive(random, MINUS_TEN, TEN);
+
+        // then
+        assertThat(number, is(equalTo(TEN)));
     }
 }
