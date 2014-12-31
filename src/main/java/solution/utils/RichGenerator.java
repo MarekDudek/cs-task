@@ -9,10 +9,10 @@ public class RichGenerator {
     {
         while (true)
         {
-            final long integer = generator.nextLong();
-            if (integer != 0 && integer != Long.MIN_VALUE)
+            final long integer = nonNegativeLong(generator);
+            if (integer != 0)
             {
-                return Math.abs(integer);
+                return integer;
             }
         }
     }

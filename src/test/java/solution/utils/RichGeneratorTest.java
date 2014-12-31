@@ -37,6 +37,20 @@ public class RichGeneratorTest {
     }
 
     @Test
+    public void zero_can_be_returned_when_requested_non_negative()
+    {
+        // given
+        given(random.nextLong())
+                .willReturn(ZERO);
+
+        // when
+        final long nonNegative = generator.nonNegativeLong(random);
+
+        // then
+        assertThat(nonNegative, is(equalTo(ZERO)));
+    }
+
+    @Test
     public void zero_will_not_be_returned_when_requested_positive()
     {
         // given
