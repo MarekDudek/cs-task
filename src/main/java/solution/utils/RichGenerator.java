@@ -1,6 +1,7 @@
 package solution.utils;
 
 import java.math.BigDecimal;
+import java.util.Date;
 import java.util.Random;
 
 public final class RichGenerator {
@@ -47,5 +48,18 @@ public final class RichGenerator {
     {
         final long longBetweenInclusive = longBetweenInclusive(generator, lowerBound.longValue(), upperBound.longValue());
         return new BigDecimal(longBetweenInclusive);
+    }
+
+    public Date randomDate(final Random generator, final Date median, final int margin)
+    {
+        final long lowerMillis = DateUtilities.startOfDayNDaysEarlier(median, margin).getTime();
+        final long upperMillis = DateUtilities.endOfDayNDaysLater(median, margin).getTime();
+
+        final long difference = upperMillis - lowerMillis + 1;
+
+        final long randomMillis = lowerMillis + nonNegativeLong(generator) % difference;
+        final Date randomDate = new Date(randomMillis);
+
+        return randomDate;
     }
 }

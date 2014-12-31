@@ -1,5 +1,7 @@
 package solution.utils;
 
+import static java.util.Calendar.DECEMBER;
+import static java.util.Calendar.MILLISECOND;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
@@ -7,6 +9,8 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 
 import java.math.BigDecimal;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.Random;
 
 import org.junit.Before;
@@ -21,6 +25,28 @@ public class RichGeneratorTest {
 
     private static final long TEN = 10L;
     private static final long MINUS_TEN = -10L;
+
+    private static final Date MEDIAN = new Calendar.Builder()
+            .setDate(2014, DECEMBER, 22)
+            .setTimeOfDay(12, 33, 58)
+            .set(MILLISECOND, 523)
+            .build().getTime();
+
+    private static final int MARGIN = 2;
+
+    private static final Date LOWER_BOUND = new Calendar.Builder()
+            .setDate(2014, DECEMBER, 20)
+            .setTimeOfDay(0, 0, 0)
+            .set(MILLISECOND, 0)
+            .build().getTime();
+
+    private static final Date UPPER_BOUND = new Calendar.Builder()
+            .setDate(2014, DECEMBER, 24)
+            .setTimeOfDay(23, 59, 59)
+            .set(MILLISECOND, 999)
+            .build().getTime();
+
+    private static final long MILLIS_PER_DAY = 24 * 60 * 60 * 1000;
 
     /** System under test. */
     private RichGenerator generator;
@@ -182,5 +208,31 @@ public class RichGeneratorTest {
 
         // then
         assertThat(decimal, is(equalTo(new BigDecimal(300))));
+    }
+
+    @Test
+    public void lower_bound_can_be_returned__for_date()
+    {
+        given(random.nextLong())
+                .willReturn(ZERO);
+
+        // when
+        final Date date = generator.randomDate(random, MEDIAN, MARGIN);
+
+        // then
+        assertThat(date, is(equalTo(LOWER_BOUND)));
+    }
+
+    @Test
+    public void upper_bound_can_be_returned__for_date()
+    {
+        given(random.nextLong())
+                .willReturn((2 * MARGIN + 1) * MILLIS_PER_DAY - 1);
+
+        // when
+        final Date date = generator.randomDate(random, MEDIAN, MARGIN);
+
+        // then
+        assertThat(date, is(equalTo(UPPER_BOUND)));
     }
 }
