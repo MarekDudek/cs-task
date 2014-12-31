@@ -56,6 +56,29 @@ public class ConcurrentAnalyserTest {
     }
 
     @Test
+    public void individual_suspicious__lambdaAnalyser()
+    {
+        // given
+        final TransactionGenerator generator = new TransactionGenerator(CONFIG);
+
+        final List<Long> blacklisted = generator.chooseBlacklisted(BLACKLISTED_COUNT);
+        final Predicate<Transaction> suspectIndividually = belongsTo(blacklisted);
+
+        final List<Long> whitelisted = generator.chooseWhitelisted(WHITELISTED_COUNT);
+        final Predicate<Transaction> skipAnalysis = belongsTo(whitelisted).or(sameDate(DUE_DAY).negate());
+
+        final Iterator<Transaction> transactions = generator.generateIterator(NUMBER_OF_TRANSACTIONS);
+
+        final FraudAnalyser analyser = new LambdaAnalyser(skipAnalysis, suspectIndividually);
+
+        // when
+        final Iterator<Transaction> suspicious = analyser.analyse(transactions, DUE_DAY);
+
+        // then
+        assertThat(newArrayList(suspicious), hasSize(33339));
+    }
+
+    @Test
     public void transactions_from_account()
     {
         // given

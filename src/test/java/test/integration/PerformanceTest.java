@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import solution.collectors.MultiStatCollector;
@@ -33,6 +34,7 @@ import solution.collectors.TransactionCountToAccountByUserCollector;
 import solution.transactions.TransactionGenerator;
 import test.analyser.FraudAnalyser;
 import test.analyser.IteratingFraudAnalyser;
+import test.analyser.LambdaAnalyser;
 import test.analyser.SimpleFraudAnalyser;
 import test.transactions.Transaction;
 
@@ -93,6 +95,29 @@ public class PerformanceTest {
                 );
 
         final FraudAnalyser analyser = new IteratingFraudAnalyser(skipAnalysis, suspectIndividually, collector);
+
+        // when
+        final Iterator<Transaction> transactions = generator.generateIterator(NUMBER_OF_TRANSACTIONS);
+        final Iterator<Transaction> suspicious = analyser.analyse(transactions, DUE_DAY);
+
+        // then
+        assertThat(newArrayList(suspicious), hasSize(45287));
+    }
+
+    @Ignore
+    @Test
+    public void lambda_fraud_analyser()
+    {
+        // given
+        final TransactionGenerator generator = new TransactionGenerator(CONFIG);
+
+        final List<Long> whitelisted = generator.chooseWhitelisted(WHITELISTED_COUNT);
+        final Predicate<Transaction> skipAnalysis = belongsTo(whitelisted).or(sameDate(DUE_DAY).negate());
+
+        final List<Long> blacklisted = generator.chooseBlacklisted(BLACKLISTED_COUNT);
+        final Predicate<Transaction> suspectIndividually = belongsTo(blacklisted);
+
+        final FraudAnalyser analyser = new LambdaAnalyser(skipAnalysis, suspectIndividually);
 
         // when
         final Iterator<Transaction> transactions = generator.generateIterator(NUMBER_OF_TRANSACTIONS);
