@@ -164,29 +164,20 @@ public class ConcurrentAnalyserTest {
                 .filter(skipAnalysis.negate())
                 .collect(Collectors.groupingBy(Transaction::getUserId));
 
-        final Predicate<List<Transaction>> sumTotalAndCountBothExceedAnyOfThresholds = new Predicate<List<Transaction>>() {
-            @Override
-            public boolean test(final List<Transaction> transactions)
-            {
-                final long count = transactions.stream()
-                        .count();
-                final BigDecimal sumTotal = transactions.stream()
-                        .map(Transaction::getAmount)
-                        .reduce(BigDecimal::add)
-                        .get();
-
-                final Predicate<Pair<Integer, BigDecimal>> countAbove =
-                        pair -> count > pair.getValue0();
-                final Predicate<Pair<Integer, BigDecimal>> sumAbove =
-                        pair -> sumTotal.compareTo(pair.getValue1()) > 0;
-
-                return THRESHOLDS.stream().anyMatch(countAbove.and(sumAbove));
-            }
-        };
-
         final List<Transaction> suspicious = transactionsPerUser.values()
                 .stream()
-                .filter(sumTotalAndCountBothExceedAnyOfThresholds)
+                .filter(list -> {
+                    final long count = list.stream().count();
+                    final Predicate<Pair<Integer, BigDecimal>> countExceeded =
+                            countAndSumTotal -> count > countAndSumTotal.getValue0();
+                    final BigDecimal sumTotal = list.stream()
+                            .map(Transaction::getAmount)
+                            .reduce(BigDecimal.ZERO, BigDecimal::add);
+                    final Predicate<Pair<Integer, BigDecimal>> sumExceeded =
+                            countAndSum -> sumTotal.compareTo(countAndSum.getValue1()) > 0;
+                    return THRESHOLDS.stream()
+                            .anyMatch(countExceeded.and(sumExceeded));
+                })
                 .flatMap(List::stream)
                 .collect(Collectors.toList());
 
