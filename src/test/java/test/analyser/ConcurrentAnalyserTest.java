@@ -164,19 +164,24 @@ public class ConcurrentAnalyserTest {
                 .filter(skipAnalysis.negate())
                 .collect(Collectors.groupingBy(Transaction::getUserId));
 
+        // @formatter:off
         final List<Transaction> suspicious = transactionsPerUser.values()
                 .stream()
                 .filter(list -> THRESHOLDS.stream()
                         .anyMatch(
-                                ((Predicate<Pair<Integer, BigDecimal>>)
-                                countAndSumTotal -> list.stream().count() > countAndSumTotal.getValue0())
-                                        .and((Predicate<Pair<Integer, BigDecimal>>)
+                                ((Predicate<Pair<Integer, BigDecimal>>) 
                                         countAndSum -> list.stream()
-                                                .map(Transaction::getAmount)
-                                                .reduce(BigDecimal.ZERO, BigDecimal::add).compareTo(countAndSum.getValue1()) > 0))
+                                            .count() > countAndSum.getValue0()
+                                ).and((Predicate<Pair<Integer, BigDecimal>>)
+                                        countAndSum -> list.stream()
+                                            .map(Transaction::getAmount)
+                                            .reduce(BigDecimal.ZERO, BigDecimal::add).compareTo(countAndSum.getValue1()) > 0
+                                )
+                         )
                 )
                 .flatMap(List::stream)
                 .collect(Collectors.toList());
+        // @formatter:on
 
         // then
         assertThat(suspicious, hasSize(6700));
