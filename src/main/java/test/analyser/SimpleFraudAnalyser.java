@@ -24,13 +24,13 @@ public class SimpleFraudAnalyser extends FraudAnalyser {
     private final StatsCollector collector;
 
     public SimpleFraudAnalyser(
-	    final Predicate<Transaction> skipAnalysis,
-	    final Predicate<Transaction> suspiciousIndividually,
-	    final StatsCollector collector)
+            final Predicate<Transaction> skipAnalysis,
+            final Predicate<Transaction> suspiciousIndividually,
+            final StatsCollector collector)
     {
-	this.skipAnalysis = checkNotNull(skipAnalysis);
-	this.suspectIndividually = checkNotNull(suspiciousIndividually);
-	this.collector = checkNotNull(collector);
+        this.skipAnalysis = checkNotNull(skipAnalysis);
+        this.suspectIndividually = checkNotNull(suspiciousIndividually);
+        this.collector = checkNotNull(collector);
     }
 
     /**
@@ -44,27 +44,27 @@ public class SimpleFraudAnalyser extends FraudAnalyser {
     @Override
     public Iterator<Transaction> analyse(final Iterator<Transaction> transactions, final Date date)
     {
-	final Collection<Transaction> input = newArrayList(transactions);
-	final Collection<Transaction> suspicious = newArrayList();
+        final Collection<Transaction> input = newArrayList(transactions);
+        final Collection<Transaction> suspicious = newArrayList();
 
-	for (final Transaction transaction : input)
-	{
-	    if (skipAnalysis.test(transaction)) {
-		continue;
-	    }
+        for (final Transaction transaction : input)
+        {
+            if (skipAnalysis.test(transaction)) {
+                continue;
+            }
 
-	    if (suspectIndividually.test(transaction)) {
-		suspicious.add(transaction);
-	    }
+            if (suspectIndividually.test(transaction)) {
+                suspicious.add(transaction);
+            }
 
-	    collector.collect(transaction);
-	}
+            collector.collect(transaction);
+        }
 
-	final Collection<Transaction> suspiciousBasedOnStats = collector.suspicious();
+        final Collection<Transaction> suspiciousBasedOnStats = collector.suspicious();
 
-	final Set<Transaction> union = newHashSet(suspicious);
-	union.addAll(suspiciousBasedOnStats);
+        final Set<Transaction> union = newHashSet(suspicious);
+        union.addAll(suspiciousBasedOnStats);
 
-	return union.iterator();
+        return union.iterator();
     }
 }

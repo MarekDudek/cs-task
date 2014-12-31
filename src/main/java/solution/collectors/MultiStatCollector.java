@@ -13,28 +13,28 @@ public class MultiStatCollector implements StatsCollector {
 
     public MultiStatCollector(final StatsCollector... collectors)
     {
-	this.collectors = newArrayList(collectors);
+        this.collectors = newArrayList(collectors);
     }
 
     @Override
     public void collect(final Transaction transaction)
     {
-	for (final StatsCollector collector : collectors)
-	{
-	    collector.collect(transaction);
-	}
+        for (final StatsCollector collector : collectors)
+        {
+            collector.collect(transaction);
+        }
     }
 
     @Override
     public Collection<Transaction> suspicious()
     {
-	final Collection<Transaction> union = newHashSet();
+        final Collection<Transaction> union = newHashSet();
 
-	for (final StatsCollector collector : collectors)
-	{
-	    union.addAll(collector.suspicious());
-	}
+        for (final StatsCollector collector : collectors)
+        {
+            union.addAll(collector.suspicious());
+        }
 
-	return union;
+        return union;
     }
 }

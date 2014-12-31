@@ -28,76 +28,76 @@ public class IteratingFraudAnalyser extends FraudAnalyser {
     private boolean inputExhausted = false;
 
     public IteratingFraudAnalyser(
-	    final Predicate<Transaction> skipAnalysis,
-	    final Predicate<Transaction> suspectIndividually,
-	    final StatsCollector collector)
+            final Predicate<Transaction> skipAnalysis,
+            final Predicate<Transaction> suspectIndividually,
+            final StatsCollector collector)
     {
-	this.skipAnalysis = checkNotNull(skipAnalysis);
-	this.suspectIndividually = checkNotNull(suspectIndividually);
-	this.collector = checkNotNull(collector);
+        this.skipAnalysis = checkNotNull(skipAnalysis);
+        this.suspectIndividually = checkNotNull(suspectIndividually);
+        this.collector = checkNotNull(collector);
     }
 
     @Override
     public Iterator<Transaction> analyse(final Iterator<Transaction> transactions, final Date date)
     {
-	return new FilteringIterator<Transaction>(transactions, skipAnalysis.negate()) {
+        return new FilteringIterator<Transaction>(transactions, skipAnalysis.negate()) {
 
-	    @Override
-	    public boolean hasNext()
-	    {
-		if (inputExhausted) {
-		    return cacheHasItems();
-		}
+            @Override
+            public boolean hasNext()
+            {
+                if (inputExhausted) {
+                    return cacheHasItems();
+                }
 
-		if (cacheHasItems()) {
-		    return true;
-		}
+                if (cacheHasItems()) {
+                    return true;
+                }
 
-		final Transaction transaction = findNextSuspiciousIndividually();
-		if (transaction == null) {
-		    inputExhausted = true;
-		} else {
-		    cache.add(transaction);
-		    suspicious.add(transaction);
-		}
+                final Transaction transaction = findNextSuspiciousIndividually();
+                if (transaction == null) {
+                    inputExhausted = true;
+                } else {
+                    cache.add(transaction);
+                    suspicious.add(transaction);
+                }
 
-		if (inputExhausted) {
-		    final Collection<Transaction> suspiciousBasedOnStats = collector.suspicious();
-		    suspiciousBasedOnStats.removeAll(suspicious);
-		    cache.addAll(suspiciousBasedOnStats);
-		}
+                if (inputExhausted) {
+                    final Collection<Transaction> suspiciousBasedOnStats = collector.suspicious();
+                    suspiciousBasedOnStats.removeAll(suspicious);
+                    cache.addAll(suspiciousBasedOnStats);
+                }
 
-		return cacheHasItems();
-	    }
+                return cacheHasItems();
+            }
 
-	    @Override
-	    public Transaction next()
-	    {
-		if (cache.isEmpty()) {
-		    hasNext();
-		}
+            @Override
+            public Transaction next()
+            {
+                if (cache.isEmpty()) {
+                    hasNext();
+                }
 
-		return cache.pop();
-	    }
+                return cache.pop();
+            }
 
-	    private boolean cacheHasItems()
-	    {
-		return BooleanUtils.isFalse(cache.isEmpty());
-	    }
+            private boolean cacheHasItems()
+            {
+                return BooleanUtils.isFalse(cache.isEmpty());
+            }
 
-	    private Transaction findNextSuspiciousIndividually()
-	    {
-		do {
-		    final Transaction candidate = super.next();
-		    if (candidate == null) {
-			return null;
-		    }
-		    collector.collect(candidate);
-		    if (suspectIndividually.test(candidate)) {
-			return candidate;
-		    }
-		} while (true);
-	    }
-	};
+            private Transaction findNextSuspiciousIndividually()
+            {
+                do {
+                    final Transaction candidate = super.next();
+                    if (candidate == null) {
+                        return null;
+                    }
+                    collector.collect(candidate);
+                    if (suspectIndividually.test(candidate)) {
+                        return candidate;
+                    }
+                } while (true);
+            }
+        };
     }
 }

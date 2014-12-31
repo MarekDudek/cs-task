@@ -33,6 +33,6 @@ public final class TestRequirements {
     public static final int MAXIMUM_ALLOWED_TRANSACTIONS_TO_ACCOUNT_BY_USER = 4;
 
     private TestRequirements() {
-	super();
+        super();
     }
 }

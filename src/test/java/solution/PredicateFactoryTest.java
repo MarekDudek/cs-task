@@ -25,39 +25,39 @@ public class PredicateFactoryTest {
 
     // given
     private static final Calendar CALENDAR =
-	    new Calendar.Builder()
-		    .setDate(2014, Calendar.DECEMBER, 21)
-		    .build();
+            new Calendar.Builder()
+                    .setDate(2014, Calendar.DECEMBER, 21)
+                    .build();
 
     private static final Date DUE_DAY = CALENDAR.getTime();
 
     private static final Date TIMESTAMP_IN_DUE_DAY =
-	    new Calendar.Builder()
-		    .setDate(CALENDAR.get(YEAR), CALENDAR.get(MONTH), CALENDAR.get(DAY_OF_MONTH))
-		    .setTimeOfDay(23, 59, 59)
-		    .build().getTime();
+            new Calendar.Builder()
+                    .setDate(CALENDAR.get(YEAR), CALENDAR.get(MONTH), CALENDAR.get(DAY_OF_MONTH))
+                    .setTimeOfDay(23, 59, 59)
+                    .build().getTime();
 
     @Test
     public void whitelisted_predicate()
     {
-	// when
-	final boolean test = belongsTo(WHITELISTED_USERS).test(WHITELISTED_USER_1_TRANSACTION);
+        // when
+        final boolean test = belongsTo(WHITELISTED_USERS).test(WHITELISTED_USER_1_TRANSACTION);
 
-	// then
-	assertThat(test, is(equalTo(true)));
+        // then
+        assertThat(test, is(equalTo(true)));
     }
 
     @Test
     public void same_date_predicate()
     {
-	// given
-	final Transaction transaction = transaction().date(TIMESTAMP_IN_DUE_DAY).build();
+        // given
+        final Transaction transaction = transaction().date(TIMESTAMP_IN_DUE_DAY).build();
 
-	// when
-	final boolean test = sameDate(DUE_DAY).test(transaction);
+        // when
+        final boolean test = sameDate(DUE_DAY).test(transaction);
 
-	// then
-	assertThat(test, is(equalTo(true)));
+        // then
+        assertThat(test, is(equalTo(true)));
     }
 
     /** System under test. */
@@ -66,13 +66,13 @@ public class PredicateFactoryTest {
     @Test
     public void compound_predicate()
     {
-	// given
-	final Transaction analysed = transaction().user(BLACKLISTED_USER_1).date(TIMESTAMP_IN_DUE_DAY).build();
+        // given
+        final Transaction analysed = transaction().user(BLACKLISTED_USER_1).date(TIMESTAMP_IN_DUE_DAY).build();
 
-	// when
-	final boolean test = ANALYSED.test(analysed);
+        // when
+        final boolean test = ANALYSED.test(analysed);
 
-	// then
-	assertThat(test, is(equalTo(true)));
+        // then
+        assertThat(test, is(equalTo(true)));
     }
 }

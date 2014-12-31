@@ -12,11 +12,11 @@ public class PredicateFactory {
 
     public static Predicate<Transaction> belongsTo(final List<Long> memebers)
     {
-	return transaction -> memebers.contains(transaction.getUserId());
+        return transaction -> memebers.contains(transaction.getUserId());
     }
 
     public static Predicate<Transaction> sameDate(final Date date)
     {
-	return transaction -> DateUtils.isSameDay(transaction.getDate(), date);
+        return transaction -> DateUtils.isSameDay(transaction.getDate(), date);
     }
 }
