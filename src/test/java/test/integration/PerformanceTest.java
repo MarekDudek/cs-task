@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import solution.collectors.MultiStatCollector;
@@ -104,7 +103,6 @@ public class PerformanceTest {
         assertThat(newArrayList(suspicious), hasSize(45287));
     }
 
-    @Ignore
     @Test
     public void lambda_fraud_analyser()
     {
@@ -117,7 +115,8 @@ public class PerformanceTest {
         final List<Long> blacklisted = generator.chooseBlacklisted(BLACKLISTED_COUNT);
         final Predicate<Transaction> suspectIndividually = belongsTo(blacklisted);
 
-        final FraudAnalyser analyser = new LambdaAnalyser(skipAnalysis, suspectIndividually, MAX_ALLOWED_FROM_ACCOUNT, 0);
+        final FraudAnalyser analyser =
+                new LambdaAnalyser(skipAnalysis, suspectIndividually, MAX_ALLOWED_FROM_ACCOUNT, MAX_ALLOWED_TO_ACCOUNT_BY_USER, THRESHOLDS);
 
         // when
         final Iterator<Transaction> transactions = generator.generateIterator(NUMBER_OF_TRANSACTIONS);

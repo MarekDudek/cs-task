@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newHashSet;
 
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -11,6 +12,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+
+import org.javatuples.Pair;
 
 import test.transactions.Transaction;
 
@@ -20,17 +23,20 @@ public class LambdaAnalyser extends FraudAnalyser {
     private final Predicate<Transaction> suspectIndividually;
     private final int maxAllowedFromAccount;
     private final int maxAllowedByUserToAccount;
+    private final List<Pair<Integer, BigDecimal>> thresholds;
 
     public LambdaAnalyser(
             final Predicate<Transaction> skipAnalysis,
             final Predicate<Transaction> suspectIndividually,
             final int maxAllowedFromAccount,
-            final int maxAllowedByUserToAccount)
+            final int maxAllowedByUserToAccount,
+            final List<Pair<Integer, BigDecimal>> thresholds)
     {
         this.skipAnalysis = checkNotNull(skipAnalysis);
         this.suspectIndividually = checkNotNull(suspectIndividually);
         this.maxAllowedFromAccount = maxAllowedFromAccount;
         this.maxAllowedByUserToAccount = maxAllowedByUserToAccount;
+        this.thresholds = checkNotNull(thresholds);
     }
 
     @Override
@@ -40,10 +46,11 @@ public class LambdaAnalyser extends FraudAnalyser {
         final List<Transaction> toAnalyse = toAnalyse(all);
 
         final List<Transaction> individually = suspiciousIndividually(toAnalyse);
-        final List<Transaction> basedOnCountFromAccount = suspiciousBasedOnCountFromAccount(toAnalyse);
-        final List<Transaction> basedOnCountByUserToAccount = suspiciousBasedOnCountByUserToAccount(toAnalyse);
+        final List<Transaction> countFromAccount = suspiciousBasedOnCountFromAccount(toAnalyse);
+        final List<Transaction> countByUserToAccount = suspiciousBasedOnCountByUserToAccount(toAnalyse);
+        final List<Transaction> countAndTotalAmountPerUser = suspiciousBasedOnCountAndTotalAmountPerUser(toAnalyse);
 
-        final List<Transaction> suspicious = distinctElements(individually, basedOnCountFromAccount, basedOnCountByUserToAccount);
+        final List<Transaction> suspicious = distinctElements(individually, countFromAccount, countByUserToAccount, countAndTotalAmountPerUser);
         return suspicious.iterator();
     }
 
@@ -77,12 +84,10 @@ public class LambdaAnalyser extends FraudAnalyser {
 
     private List<Transaction> suspiciousBasedOnCountFromAccount(final List<Transaction> transactions)
     {
-        final Map<Long, List<Transaction>> grouppedByFromAccount = transactions
-                .stream()
+        final Map<Long, List<Transaction>> grouppedByFromAccount = transactions.stream()
                 .collect(Collectors.groupingBy(Transaction::getAccountFromId));
 
-        final List<Transaction> suspicious = grouppedByFromAccount.values()
-                .stream()
+        final List<Transaction> suspicious = grouppedByFromAccount.values().stream()
                 .filter(list -> list.size() > maxAllowedFromAccount)
                 .flatMap(List::stream)
                 .collect(Collectors.toList());
@@ -90,23 +95,42 @@ public class LambdaAnalyser extends FraudAnalyser {
         return suspicious;
     }
 
-    private List<Transaction> suspiciousBasedOnCountByUserToAccount(List<Transaction> transactions)
+    private List<Transaction> suspiciousBasedOnCountByUserToAccount(final List<Transaction> transactions)
     {
         final Map<Long, Map<Long, List<Transaction>>> grouppedByUserAndToAccount = transactions.stream()
-                .collect(
-                        Collectors.groupingBy(
-                                Transaction::getUserId,
-                                Collectors.groupingBy(
-                                        Transaction::getAccountToId
-                                        )
-                                )
-                );
+                .collect(Collectors.groupingBy(Transaction::getUserId, Collectors.groupingBy(Transaction::getAccountToId)));
 
         final List<Transaction> suspicious = grouppedByUserAndToAccount.values().stream()
                 .flatMap(byToAccountMap -> byToAccountMap.values().stream())
                 .filter(list -> list.size() > maxAllowedByUserToAccount)
                 .flatMap(List::stream)
                 .collect(Collectors.toList());
+
+        return suspicious;
+    }
+
+    private List<Transaction> suspiciousBasedOnCountAndTotalAmountPerUser(final List<Transaction> transactions)
+    {
+        final Map<Long, List<Transaction>> grouppedByUser = transactions.stream()
+                .collect(Collectors.groupingBy(Transaction::getUserId));
+
+        // @formatter:off
+        final List<Transaction> suspicious = grouppedByUser.values()
+                .stream()
+                .filter(list -> thresholds.stream()
+                        .anyMatch(
+                                ((Predicate<Pair<Integer, BigDecimal>>) 
+                                        countAndTotalAmount -> list.stream().count() > countAndTotalAmount.getValue0()
+                                ).and((Predicate<Pair<Integer, BigDecimal>>)
+                                        countAndTotalAmount -> list.stream()
+                                            .map(Transaction::getAmount)
+                                            .reduce(BigDecimal.ZERO, BigDecimal::add).compareTo(countAndTotalAmount.getValue1()) > 0
+                                )
+                         )
+                )
+                .flatMap(List::stream)
+                .collect(Collectors.toList());
+        // @formatter:on
 
         return suspicious;
     }

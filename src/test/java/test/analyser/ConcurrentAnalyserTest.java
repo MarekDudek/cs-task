@@ -16,6 +16,7 @@ import static test.analyser.TestGeneratorSettings.THRESHOLDS;
 import static test.analyser.TestGeneratorSettings.WHITELISTED_COUNT;
 
 import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -69,7 +70,7 @@ public class ConcurrentAnalyserTest {
 
         final Iterator<Transaction> transactions = generator.generateIterator(NUMBER_OF_TRANSACTIONS);
 
-        final FraudAnalyser analyser = new LambdaAnalyser(skipAnalysis, suspectIndividually, 1_000_000, 1_000_000);
+        final FraudAnalyser analyser = new LambdaAnalyser(skipAnalysis, suspectIndividually, 1_000_000, 1_000_000, Collections.emptyList());
 
         // when
         final Iterator<Transaction> suspicious = analyser.analyse(transactions, DUE_DAY);
@@ -144,7 +145,7 @@ public class ConcurrentAnalyserTest {
         final Iterator<Transaction> transactions = generator.generateIterator(NUMBER_OF_TRANSACTIONS);
 
         // when
-        final FraudAnalyser analyser = new LambdaAnalyser(skipAnalysis, transaction -> false, MAX_ALLOWED_FROM_ACCOUNT, 1_000_000);
+        final FraudAnalyser analyser = new LambdaAnalyser(skipAnalysis, transaction -> false, MAX_ALLOWED_FROM_ACCOUNT, 1_000_000, Collections.emptyList());
         final Iterator<Transaction> suspicious = analyser.analyse(transactions, DUE_DAY);
 
         // then
@@ -200,7 +201,8 @@ public class ConcurrentAnalyserTest {
         final Iterator<Transaction> result = generator.generateIterator(NUMBER_OF_TRANSACTIONS);
 
         // when
-        final FraudAnalyser analyser = new LambdaAnalyser(skipAnalysis, transaction -> false, 1_000_000, MAX_ALLOWED_TO_ACCOUNT_BY_USER);
+        final FraudAnalyser analyser = new LambdaAnalyser(skipAnalysis, transaction -> false, 1_000_000, MAX_ALLOWED_TO_ACCOUNT_BY_USER,
+                Collections.emptyList());
         final Iterator<Transaction> suspicious = analyser.analyse(result, DUE_DAY);
 
         // then
