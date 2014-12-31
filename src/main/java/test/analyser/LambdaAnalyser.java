@@ -2,7 +2,6 @@ package test.analyser;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Lists.newArrayList;
-import static com.google.common.collect.Sets.newHashSet;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -57,11 +56,12 @@ public class LambdaAnalyser extends FraudAnalyser {
     @SafeVarargs
     private static final List<Transaction> distinctElements(final List<Transaction>... lists)
     {
-        final Set<Transaction> union = newHashSet();
-        for (final List<Transaction> list : lists) {
-            union.addAll(list);
-        }
-        return newArrayList(union);
+        final List<List<Transaction>> listOfLists = newArrayList(lists);
+        final Set<Transaction> distinct = listOfLists.stream()
+                .flatMap(List::stream)
+                .collect(Collectors.toSet());
+
+        return newArrayList(distinct);
     }
 
     private List<Transaction> toAnalyse(final List<Transaction> transactions)
