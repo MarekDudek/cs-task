@@ -3,7 +3,7 @@ package solution.utils;
 import java.math.BigDecimal;
 import java.util.Random;
 
-public class RichGenerator {
+public final class RichGenerator {
 
     public long positiveLong(final Random generator)
     {
