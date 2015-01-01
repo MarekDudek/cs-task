@@ -19,11 +19,11 @@ import com.carrotsearch.junitbenchmarks.annotation.AxisRange;
 import com.carrotsearch.junitbenchmarks.annotation.BenchmarkHistoryChart;
 import com.carrotsearch.junitbenchmarks.annotation.BenchmarkMethodChart;
 
-@BenchmarkOptions(benchmarkRounds = BenchmarkTest.BENCHMARK_ROUNDS, warmupRounds = BenchmarkTest.WARMUP_ROUNDS)
+@BenchmarkOptions(benchmarkRounds = BenchmarkExampleTest.BENCHMARK_ROUNDS, warmupRounds = BenchmarkExampleTest.WARMUP_ROUNDS)
 @AxisRange(min = 0, max = 1)
 @BenchmarkMethodChart(filePrefix = "src/test/resources/benchmarks/graphs/benchmark-sum-decimals-method")
 @BenchmarkHistoryChart(filePrefix = "src/test/resources/benchmarks/graphs/benchmark-sum-decimals-history")
-public class BenchmarkTest {
+public class BenchmarkExampleTest {
 
     public static final int WARMUP_ROUNDS = 5;
     public static final int BENCHMARK_ROUNDS = 10;
