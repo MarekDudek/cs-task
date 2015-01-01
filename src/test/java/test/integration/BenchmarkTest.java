@@ -16,11 +16,14 @@ import org.junit.rules.TestRule;
 import com.carrotsearch.junitbenchmarks.BenchmarkOptions;
 import com.carrotsearch.junitbenchmarks.BenchmarkRule;
 import com.carrotsearch.junitbenchmarks.annotation.AxisRange;
+import com.carrotsearch.junitbenchmarks.annotation.BenchmarkHistoryChart;
 import com.carrotsearch.junitbenchmarks.annotation.BenchmarkMethodChart;
+import com.carrotsearch.junitbenchmarks.annotation.LabelType;
 
 @BenchmarkOptions(benchmarkRounds = BenchmarkTest.BENCHMARK_ROUNDS, warmupRounds = BenchmarkTest.WARMUP_ROUNDS)
 @AxisRange(min = 0, max = 1)
-@BenchmarkMethodChart(filePrefix = "src/test/resources/benchmark-sum-decimals")
+@BenchmarkMethodChart(filePrefix = "src/test/resources/benchmarks/graphs/benchmark-sum-decimals-method")
+@BenchmarkHistoryChart(labelWith = LabelType.RUN_ID, maxRuns = 1_000, filePrefix = "src/test/resources/benchmarks/graphs/benchmark-sum-decimals-history")
 public class BenchmarkTest {
 
     public static final int WARMUP_ROUNDS = 5;
