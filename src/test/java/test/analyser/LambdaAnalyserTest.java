@@ -20,15 +20,11 @@ import static test.analyser.TestGeneratorSettings.THRESHOLDS;
 import static test.analyser.TestGeneratorSettings.VERY_BIG_NUMBER;
 import static test.analyser.TestGeneratorSettings.WHITELISTED_COUNT;
 
-import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
-import org.javatuples.Pair;
 import org.junit.Test;
 
 import solution.transactions.TransactionGenerator;
@@ -72,8 +68,8 @@ public class LambdaAnalyserTest {
         final Iterator<Transaction> transactions = generator.generateIterator(NUMBER_OF_TRANSACTIONS);
 
         // when
-        final FraudAnalyser analyser = new LambdaAnalyser(skipAnalysis, ALWAYS_FAIL, MAX_ALLOWED_FROM_ACCOUNT, VERY_BIG_NUMBER,
-                Collections.emptyList());
+        final FraudAnalyser analyser =
+                new LambdaAnalyser(skipAnalysis, ALWAYS_FAIL, MAX_ALLOWED_FROM_ACCOUNT, VERY_BIG_NUMBER, Collections.emptyList());
         final Iterator<Transaction> suspicious = analyser.analyse(transactions, DUE_DAY);
 
         // then
@@ -92,8 +88,8 @@ public class LambdaAnalyserTest {
         final Iterator<Transaction> result = generator.generateIterator(NUMBER_OF_TRANSACTIONS);
 
         // when
-        final FraudAnalyser analyser = new LambdaAnalyser(skipAnalysis, ALWAYS_FAIL, VERY_BIG_NUMBER, MAX_ALLOWED_BY_USER_TO_ACCOUNT,
-                Collections.emptyList());
+        final FraudAnalyser analyser =
+                new LambdaAnalyser(skipAnalysis, ALWAYS_FAIL, VERY_BIG_NUMBER, MAX_ALLOWED_BY_USER_TO_ACCOUNT, Collections.emptyList());
         final Iterator<Transaction> suspicious = analyser.analyse(result, DUE_DAY);
 
         // then
@@ -103,7 +99,6 @@ public class LambdaAnalyserTest {
     @Test
     public void transactions_from_user_that_count_and_total_above_thresholds()
     {
-
         // given
         final TransactionGenerator generator = new TransactionGenerator(CONFIG);
 
@@ -111,33 +106,13 @@ public class LambdaAnalyserTest {
         final Predicate<Transaction> skipAnalysis = belongsTo(whitelisted).or(sameDate(DUE_DAY).negate());
 
         final Iterator<Transaction> result = generator.generateIterator(NUMBER_OF_TRANSACTIONS);
-        final List<Transaction> transactions = newArrayList(result);
 
         // when
-        final Map<Long, List<Transaction>> transactionsPerUser = transactions.stream()
-                .filter(skipAnalysis.negate())
-                .collect(Collectors.groupingBy(Transaction::getUserId));
-
-        // @formatter:off
-        final List<Transaction> suspicious = transactionsPerUser.values()
-                .stream()
-                .filter(list -> THRESHOLDS.stream()
-                        .anyMatch(
-                                ((Predicate<Pair<Integer, BigDecimal>>) 
-                                        countAndSum -> list.stream()
-                                            .count() > countAndSum.getValue0()
-                                ).and((Predicate<Pair<Integer, BigDecimal>>)
-                                        countAndSum -> list.stream()
-                                            .map(Transaction::getAmount)
-                                            .reduce(BigDecimal.ZERO, BigDecimal::add).compareTo(countAndSum.getValue1()) > 0
-                                )
-                         )
-                )
-                .flatMap(List::stream)
-                .collect(Collectors.toList());
-        // @formatter:on
+        final FraudAnalyser analyser =
+                new LambdaAnalyser(skipAnalysis, ALWAYS_FAIL, VERY_BIG_NUMBER, VERY_BIG_NUMBER, THRESHOLDS);
+        final Iterator<Transaction> suspicious = analyser.analyse(result, DUE_DAY);
 
         // then
-        assertThat(suspicious, hasSize(EXCEEDING_ANY_THRESHOLD_OF_COUNT_AND_TOTAL_AMOUNT));
+        assertThat(newArrayList(suspicious), hasSize(EXCEEDING_ANY_THRESHOLD_OF_COUNT_AND_TOTAL_AMOUNT));
     }
 }
