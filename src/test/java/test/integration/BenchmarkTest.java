@@ -15,11 +15,16 @@ import org.junit.rules.TestRule;
 
 import com.carrotsearch.junitbenchmarks.BenchmarkOptions;
 import com.carrotsearch.junitbenchmarks.BenchmarkRule;
+import com.carrotsearch.junitbenchmarks.annotation.AxisRange;
+import com.carrotsearch.junitbenchmarks.annotation.BenchmarkMethodChart;
 
+@BenchmarkOptions(benchmarkRounds = BenchmarkTest.BENCHMARK_ROUNDS, warmupRounds = BenchmarkTest.WARMUP_ROUNDS)
+@AxisRange(min = 0, max = 1)
+@BenchmarkMethodChart(filePrefix = "src/test/resources/benchmark-sum-decimals")
 public class BenchmarkTest {
 
-    private static final int WARMUP_ROUNDS = 5;
-    private static final int BENCHMARK_ROUNDS = 10;
+    public static final int WARMUP_ROUNDS = 5;
+    public static final int BENCHMARK_ROUNDS = 10;
 
     @Rule
     public TestRule benchmarkRun = new BenchmarkRule();
@@ -42,7 +47,6 @@ public class BenchmarkTest {
     }
 
     @Test
-    @BenchmarkOptions(benchmarkRounds = BENCHMARK_ROUNDS, warmupRounds = WARMUP_ROUNDS)
     public void sequentialExecution() throws Exception
     {
         // when
@@ -53,7 +57,6 @@ public class BenchmarkTest {
     }
 
     @Test
-    @BenchmarkOptions(benchmarkRounds = BENCHMARK_ROUNDS, warmupRounds = WARMUP_ROUNDS)
     public void parallelExecution() throws Exception
     {
         // when

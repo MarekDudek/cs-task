@@ -21,6 +21,13 @@
 					<target>8</target>
 				</configuration>
 			</plugin>
+			<plugin>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>2.12.4</version>
+				<configuration>
+					<argLine>-Djub.consumers=CONSOLE,H2 -Djub.db.file=src/test/resources/benchmark</argLine>
+				</configuration>
+			</plugin>
 		</plugins>
 		<pluginManagement>
 			<plugins>
@@ -107,6 +114,11 @@
 			<artifactId>junit-benchmarks</artifactId>
 			<version>0.7.2</version>
 			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
+			<version>1.4.184</version>
 		</dependency>
 	</dependencies>
 
