@@ -4,11 +4,7 @@ import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Calendar.DECEMBER;
 import static java.util.Calendar.MILLISECOND;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.greaterThan;
-import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.lessThan;
-import static org.hamcrest.Matchers.lessThanOrEqualTo;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.sameInstance;
@@ -47,6 +43,7 @@ public class TransactionGeneratorTest {
     private static final TransactionGeneratorConfig CONFIG =
             new TransactionGeneratorConfig(SEED, MIN_ID, MAX_ID, USER_COUNT, ACCOUNT_COUNT, MEDIAN_DATE, DAYS_MARGIN, MIN_AMOUNT, MAX_AMOUNT);
 
+    /** System under test. */
     private TransactionGenerator generator;
 
     @Before
@@ -120,58 +117,6 @@ public class TransactionGeneratorTest {
 
             // then
             assertThat(TransactionComparator.INSTANCE.compare(transaction1, transaction2), equalTo(0));
-        }
-    }
-
-    @Test
-    public void date_is_generated_from_median_and_margins()
-    {
-        // given
-        final Date median = new Calendar.Builder()
-                .setDate(2014, DECEMBER, 22)
-                .setTimeOfDay(12, 33, 58)
-                .set(MILLISECOND, 523)
-                .build().getTime();
-
-        final int margin = 2;
-
-        final Date lowerBound = new Calendar.Builder()
-                .setDate(2014, DECEMBER, 20)
-                .setTimeOfDay(0, 0, 0)
-                .set(MILLISECOND, 0)
-                .build().getTime();
-
-        final Date upperBound = new Calendar.Builder()
-                .setDate(2014, DECEMBER, 24)
-                .setTimeOfDay(23, 59, 59)
-                .set(MILLISECOND, 999)
-                .build().getTime();
-
-        for (int i = 0; i < 1000; i++)
-        {
-            // when
-            final Date date = generator.randomDate(median, margin);
-
-            // then
-            assertThat(date, greaterThan(lowerBound));
-            assertThat(date, lessThan(upperBound));
-        }
-    }
-
-    @Test
-    public void amount_never_exceeds_specified_maximum()
-    {
-        final BigDecimal minimum = new BigDecimal(1);
-        final BigDecimal maximum = new BigDecimal(10);
-
-        for (int i = 0; i < 1000; i++)
-        {
-            // when
-            final BigDecimal amount = generator.randomAmount(minimum, maximum);
-
-            // then
-            assertThat(amount, greaterThanOrEqualTo(minimum));
-            assertThat(amount, lessThanOrEqualTo(maximum));
         }
     }
 }

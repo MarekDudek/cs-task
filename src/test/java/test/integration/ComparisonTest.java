@@ -12,8 +12,9 @@ import static solution.PredicateFactory.sameDate;
 import static test.analyser.TestGeneratorSettings.BLACKLISTED_COUNT;
 import static test.analyser.TestGeneratorSettings.CONFIG;
 import static test.analyser.TestGeneratorSettings.DUE_DAY;
+import static test.analyser.TestGeneratorSettings.EXPECTED_NUMBER_OF_ALL_SUSPICIOUS;
 import static test.analyser.TestGeneratorSettings.MAX_ALLOWED_FROM_ACCOUNT;
-import static test.analyser.TestGeneratorSettings.MAX_ALLOWED_TO_ACCOUNT_BY_USER;
+import static test.analyser.TestGeneratorSettings.MAX_ALLOWED_BY_USER_TO_ACCOUNT;
 import static test.analyser.TestGeneratorSettings.NUMBER_OF_TRANSACTIONS;
 import static test.analyser.TestGeneratorSettings.THRESHOLDS;
 import static test.analyser.TestGeneratorSettings.WHITELISTED_COUNT;
@@ -37,7 +38,7 @@ import test.analyser.LambdaAnalyser;
 import test.analyser.SimpleFraudAnalyser;
 import test.transactions.Transaction;
 
-public class PerformanceTest {
+public class ComparisonTest {
 
     @Test
     public void simple_fraud_analyser()
@@ -54,7 +55,7 @@ public class PerformanceTest {
         final StatsCollector collector = new MultiStatCollector
                 (
                         new TransactionCountFromAccoutCollector(MAX_ALLOWED_FROM_ACCOUNT),
-                        new TransactionCountToAccountByUserCollector(MAX_ALLOWED_TO_ACCOUNT_BY_USER),
+                        new TransactionCountToAccountByUserCollector(MAX_ALLOWED_BY_USER_TO_ACCOUNT),
                         new TransactionCountFromUserAndSumTotalCollector(THRESHOLDS)
                 );
 
@@ -71,7 +72,7 @@ public class PerformanceTest {
         final Set<Long> common = intersection(newHashSet(whitelisted), newHashSet(blacklisted));
         assertThat(common, is(empty()));
 
-        assertThat(newArrayList(suspicious), hasSize(45287));
+        assertThat(newArrayList(suspicious), hasSize(EXPECTED_NUMBER_OF_ALL_SUSPICIOUS));
     }
 
     @Test
@@ -89,7 +90,7 @@ public class PerformanceTest {
         final StatsCollector collector = new MultiStatCollector
                 (
                         new TransactionCountFromAccoutCollector(MAX_ALLOWED_FROM_ACCOUNT),
-                        new TransactionCountToAccountByUserCollector(MAX_ALLOWED_TO_ACCOUNT_BY_USER),
+                        new TransactionCountToAccountByUserCollector(MAX_ALLOWED_BY_USER_TO_ACCOUNT),
                         new TransactionCountFromUserAndSumTotalCollector(THRESHOLDS)
                 );
 
@@ -100,7 +101,7 @@ public class PerformanceTest {
         final Iterator<Transaction> suspicious = analyser.analyse(transactions, DUE_DAY);
 
         // then
-        assertThat(newArrayList(suspicious), hasSize(45287));
+        assertThat(newArrayList(suspicious), hasSize(EXPECTED_NUMBER_OF_ALL_SUSPICIOUS));
     }
 
     @Test
@@ -116,13 +117,13 @@ public class PerformanceTest {
         final Predicate<Transaction> suspectIndividually = belongsTo(blacklisted);
 
         final FraudAnalyser analyser =
-                new LambdaAnalyser(skipAnalysis, suspectIndividually, MAX_ALLOWED_FROM_ACCOUNT, MAX_ALLOWED_TO_ACCOUNT_BY_USER, THRESHOLDS);
+                new LambdaAnalyser(skipAnalysis, suspectIndividually, MAX_ALLOWED_FROM_ACCOUNT, MAX_ALLOWED_BY_USER_TO_ACCOUNT, THRESHOLDS);
 
         // when
         final Iterator<Transaction> transactions = generator.generateIterator(NUMBER_OF_TRANSACTIONS);
         final Iterator<Transaction> suspicious = analyser.analyse(transactions, DUE_DAY);
 
         // then
-        assertThat(newArrayList(suspicious), hasSize(45287));
+        assertThat(newArrayList(suspicious), hasSize(EXPECTED_NUMBER_OF_ALL_SUSPICIOUS));
     }
 }
