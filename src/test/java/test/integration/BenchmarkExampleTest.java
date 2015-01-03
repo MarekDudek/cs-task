@@ -21,8 +21,8 @@ import com.carrotsearch.junitbenchmarks.annotation.BenchmarkMethodChart;
 
 @BenchmarkOptions(benchmarkRounds = BenchmarkExampleTest.BENCHMARK_ROUNDS, warmupRounds = BenchmarkExampleTest.WARMUP_ROUNDS)
 @AxisRange(min = 0, max = 1)
-@BenchmarkMethodChart(filePrefix = "src/test/resources/benchmarks/graphs/benchmark-sum-decimals-method")
-@BenchmarkHistoryChart(filePrefix = "src/test/resources/benchmarks/graphs/benchmark-sum-decimals-history")
+@BenchmarkMethodChart(filePrefix = "src/test/resources/benchmarks/graphs/sum-decimals-method")
+@BenchmarkHistoryChart(filePrefix = "src/test/resources/benchmarks/graphs/sum-decimals-history")
 public class BenchmarkExampleTest {
 
     public static final int WARMUP_ROUNDS = 5;

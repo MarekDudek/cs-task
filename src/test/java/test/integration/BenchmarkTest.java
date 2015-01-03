@@ -18,6 +18,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.function.Predicate;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -44,8 +45,8 @@ import com.carrotsearch.junitbenchmarks.annotation.BenchmarkHistoryChart;
 import com.carrotsearch.junitbenchmarks.annotation.BenchmarkMethodChart;
 
 @BenchmarkOptions(benchmarkRounds = BenchmarkTest.BENCHMARK_ROUNDS, warmupRounds = BenchmarkTest.WARMUP_ROUNDS)
-@BenchmarkMethodChart(filePrefix = "src/test/resources/benchmarks/graphs/benchmark-analysers-method")
-@BenchmarkHistoryChart(filePrefix = "src/test/resources/benchmarks/graphs/benchmark-analysers-history")
+@BenchmarkMethodChart(filePrefix = "src/test/resources/benchmarks/graphs/analysers-method")
+@BenchmarkHistoryChart(filePrefix = "src/test/resources/benchmarks/graphs/analysers-history")
 public class BenchmarkTest {
 
     // Benchmark settings
@@ -61,6 +62,8 @@ public class BenchmarkTest {
     private Predicate<Transaction> skipAnalysis;
     private Predicate<Transaction> suspectIndividually;
     private StatsCollector collector;
+
+    private Iterator<Transaction> suspicious;
 
     @BeforeClass
     public static void beforeSuite()
@@ -87,6 +90,14 @@ public class BenchmarkTest {
                 );
     }
 
+    @After
+    public void tearDown()
+    {
+        // then
+        final long count = newArrayList(suspicious).parallelStream().count();
+        assertThat(count, greaterThan(1_000L));
+    }
+
     @Test
     public void simple_analyser()
     {
@@ -95,10 +106,7 @@ public class BenchmarkTest {
                 new SimpleFraudAnalyser(skipAnalysis, suspectIndividually, collector);
         // when
         final Iterator<Transaction> transactions = GENERATOR.generateIterator(NUMBER_OF_TRANSACTIONS);
-        final Iterator<Transaction> suspicious = analyser.analyse(transactions, DUE_DAY);
-
-        // then
-        assertThat(newArrayList(suspicious).size(), greaterThan(0));
+        suspicious = analyser.analyse(transactions, DUE_DAY);
     }
 
     @Test
@@ -111,10 +119,7 @@ public class BenchmarkTest {
 
         // when
         final Iterator<Transaction> transactions = GENERATOR.generateIterator(NUMBER_OF_TRANSACTIONS);
-        final Iterator<Transaction> suspicious = analyser.analyse(transactions, DUE_DAY);
-
-        // then
-        assertThat(newArrayList(suspicious).size(), greaterThan(0));
+        suspicious = analyser.analyse(transactions, DUE_DAY);
     }
 
     @Test
@@ -126,10 +131,7 @@ public class BenchmarkTest {
 
         // when
         final Iterator<Transaction> transactions = GENERATOR.generateIterator(NUMBER_OF_TRANSACTIONS);
-        final Iterator<Transaction> suspicious = analyser.analyse(transactions, DUE_DAY);
-
-        // then
-        assertThat(newArrayList(suspicious).size(), greaterThan(0));
+        suspicious = analyser.analyse(transactions, DUE_DAY);
     }
 
     @Test
@@ -141,9 +143,6 @@ public class BenchmarkTest {
 
         // when
         final Iterator<Transaction> transactions = GENERATOR.generateIterator(NUMBER_OF_TRANSACTIONS);
-        final Iterator<Transaction> suspicious = analyser.analyse(transactions, DUE_DAY);
-
-        // then
-        assertThat(newArrayList(suspicious).size(), greaterThan(0));
+        suspicious = analyser.analyse(transactions, DUE_DAY);
     }
 }
