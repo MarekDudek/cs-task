@@ -60,6 +60,7 @@ public class AnalysisPhasesBenchmarkTest {
     private static List<Transaction> INDIVIDUALLY;
     private static List<Transaction> COUNT_FROM_ACCOUNT;
     private static List<Transaction> COUNT_BY_USER_TO_ACCOUNT;
+    private static List<Transaction> COUNT_AND_TOTAL_AMOUNT_BY_USER;
 
     @BeforeClass
     public static void setup()
@@ -100,8 +101,14 @@ public class AnalysisPhasesBenchmarkTest {
 
         if (COUNT_BY_USER_TO_ACCOUNT != null) {
             final long count = COUNT_BY_USER_TO_ACCOUNT.parallelStream().count();
-            assertThat(count, is(equalTo(338l)));
+            assertThat(count, is(equalTo(338L)));
             COUNT_BY_USER_TO_ACCOUNT = null;
+        }
+
+        if (COUNT_AND_TOTAL_AMOUNT_BY_USER != null) {
+            final long count = COUNT_AND_TOTAL_AMOUNT_BY_USER.parallelStream().count();
+            assertThat(count, is(equalTo(10_387L)));
+            COUNT_AND_TOTAL_AMOUNT_BY_USER = null;
         }
     }
 
@@ -148,5 +155,20 @@ public class AnalysisPhasesBenchmarkTest {
         // when
         final CompletableFuture<List<Transaction>> promise = ANALYSER.countByUserToAccountPromise(TO_ANALYSE);
         COUNT_BY_USER_TO_ACCOUNT = promise.join();
+    }
+
+    @Test
+    public void count_and_total_amount()
+    {
+        // when
+        COUNT_AND_TOTAL_AMOUNT_BY_USER = ANALYSER.countAndTotalAmountByUser(TO_ANALYSE);
+    }
+
+    @Test
+    public void count_and_total_amount__concurrent()
+    {
+        // when
+        final CompletableFuture<List<Transaction>> promise = ANALYSER.countAndTotalAmountByUserPromise(TO_ANALYSE);
+        COUNT_AND_TOTAL_AMOUNT_BY_USER = promise.join();
     }
 }

@@ -174,12 +174,14 @@ public class ConcurrentAnalyser extends FraudAnalyser {
         return suspicious;
     }
 
-    private CompletableFuture<List<Transaction>> countAndTotalAmountByUserPromise(final List<Transaction> transactions) {
+    @VisibleForTesting
+    CompletableFuture<List<Transaction>> countAndTotalAmountByUserPromise(final List<Transaction> transactions) {
 
         return CompletableFuture.supplyAsync(() -> countAndTotalAmountByUser(transactions), executor);
     }
 
-    private List<Transaction> countAndTotalAmountByUser(final List<Transaction> transactions)
+    @VisibleForTesting
+    List<Transaction> countAndTotalAmountByUser(final List<Transaction> transactions)
     {
         final Map<Long, List<Transaction>> grouppedByUser = transactions.parallelStream()
                 .collect(Collectors.groupingByConcurrent(Transaction::getUserId));
