@@ -30,6 +30,7 @@ import solution.collectors.TransactionCountFromAccoutCollector;
 import solution.collectors.TransactionCountFromUserAndSumTotalCollector;
 import solution.collectors.TransactionCountToAccountByUserCollector;
 import solution.transactions.TransactionGenerator;
+import test.analyser.ConcurrentAnalyser;
 import test.analyser.FraudAnalyser;
 import test.analyser.IteratingFraudAnalyser;
 import test.analyser.LambdaAnalyser;
@@ -120,6 +121,21 @@ public class BenchmarkTest {
         // given
         final FraudAnalyser analyser =
                 new LambdaAnalyser(skipAnalysis, suspectIndividually, MAX_ALLOWED_FROM_ACCOUNT, MAX_ALLOWED_BY_USER_TO_ACCOUNT, THRESHOLDS);
+
+        // when
+        final Iterator<Transaction> transactions = GENERATOR.generateIterator(NUMBER_OF_TRANSACTIONS);
+        final Iterator<Transaction> suspicious = analyser.analyse(transactions, DUE_DAY);
+
+        // then
+        assertThat(newArrayList(suspicious).size(), greaterThan(0));
+    }
+
+    @Test
+    public void concurrent_analyser()
+    {
+        // given
+        final FraudAnalyser analyser =
+                new ConcurrentAnalyser(skipAnalysis, suspectIndividually, MAX_ALLOWED_FROM_ACCOUNT, MAX_ALLOWED_BY_USER_TO_ACCOUNT, THRESHOLDS);
 
         // when
         final Iterator<Transaction> transactions = GENERATOR.generateIterator(NUMBER_OF_TRANSACTIONS);
