@@ -89,8 +89,8 @@ public class ConcurrentAnalyser extends FraudAnalyser {
     private static final List<Transaction> distinctElements(final List<Transaction>... lists)
     {
         final List<List<Transaction>> listOfLists = newArrayList(lists);
-        final Set<Transaction> distinct = listOfLists.stream()
-                .flatMap(List::stream)
+        final Set<Transaction> distinct = listOfLists.parallelStream()
+                .flatMap(List::parallelStream)
                 .collect(Collectors.toSet());
 
         return newArrayList(distinct);
@@ -98,7 +98,7 @@ public class ConcurrentAnalyser extends FraudAnalyser {
 
     private List<Transaction> toAnalyse(final List<Transaction> transactions)
     {
-        final List<Transaction> toAnalyse = transactions.stream()
+        final List<Transaction> toAnalyse = transactions.parallelStream()
                 .filter(skipAnalysis.negate())
                 .collect(Collectors.toList());
 
@@ -112,7 +112,7 @@ public class ConcurrentAnalyser extends FraudAnalyser {
 
     private List<Transaction> suspiciousIndividually(final List<Transaction> transactions)
     {
-        final List<Transaction> suspicious = transactions.stream()
+        final List<Transaction> suspicious = transactions.parallelStream()
                 .filter(suspectIndividually)
                 .collect(Collectors.toList());
 
@@ -126,12 +126,12 @@ public class ConcurrentAnalyser extends FraudAnalyser {
 
     private List<Transaction> suspiciousBasedOnCountFromAccount(final List<Transaction> transactions)
     {
-        final Map<Long, List<Transaction>> grouppedByFromAccount = transactions.stream()
+        final Map<Long, List<Transaction>> grouppedByFromAccount = transactions.parallelStream()
                 .collect(Collectors.groupingBy(Transaction::getAccountFromId));
 
-        final List<Transaction> suspicious = grouppedByFromAccount.values().stream()
+        final List<Transaction> suspicious = grouppedByFromAccount.values().parallelStream()
                 .filter(list -> list.size() > maxAllowedFromAccount)
-                .flatMap(List::stream)
+                .flatMap(List::parallelStream)
                 .collect(Collectors.toList());
 
         return suspicious;
@@ -144,13 +144,13 @@ public class ConcurrentAnalyser extends FraudAnalyser {
 
     private List<Transaction> suspiciousBasedOnCountByUserToAccount(final List<Transaction> transactions)
     {
-        final Map<Long, Map<Long, List<Transaction>>> grouppedByUserAndToAccount = transactions.stream()
+        final Map<Long, Map<Long, List<Transaction>>> grouppedByUserAndToAccount = transactions.parallelStream()
                 .collect(Collectors.groupingBy(Transaction::getUserId, Collectors.groupingBy(Transaction::getAccountToId)));
 
-        final List<Transaction> suspicious = grouppedByUserAndToAccount.values().stream()
-                .flatMap(byToAccountMap -> byToAccountMap.values().stream())
+        final List<Transaction> suspicious = grouppedByUserAndToAccount.values().parallelStream()
+                .flatMap(byToAccountMap -> byToAccountMap.values().parallelStream())
                 .filter(list -> list.size() > maxAllowedByUserToAccount)
-                .flatMap(List::stream)
+                .flatMap(List::parallelStream)
                 .collect(Collectors.toList());
 
         return suspicious;
@@ -163,25 +163,25 @@ public class ConcurrentAnalyser extends FraudAnalyser {
 
     private List<Transaction> suspiciousBasedOnCountAndTotalAmountByUser(final List<Transaction> transactions)
     {
-        final Map<Long, List<Transaction>> grouppedByUser = transactions.stream()
+        final Map<Long, List<Transaction>> grouppedByUser = transactions.parallelStream()
                 .collect(Collectors.groupingBy(Transaction::getUserId));
 
         // @formatter:off
         final List<Transaction> suspicious = grouppedByUser.values()
-                .stream()
+                .parallelStream()
                 .filter(list -> thresholds.stream()
                         .anyMatch(
                                 ((Predicate<Pair<Integer, BigDecimal>>) 
-                                        countAndTotalAmount -> list.stream()
+                                        countAndTotalAmount -> list.parallelStream()
                                                 .count() > countAndTotalAmount.getValue0()
                                 ).and((Predicate<Pair<Integer, BigDecimal>>)
-                                        countAndTotalAmount -> list.stream()
+                                        countAndTotalAmount -> list.parallelStream()
                                                 .map(Transaction::getAmount)
                                                 .reduce(BigDecimal.ZERO, BigDecimal::add).compareTo(countAndTotalAmount.getValue1()) > 0
                                 )
                          )
                 )
-                .flatMap(List::stream)
+                .flatMap(List::parallelStream)
                 .collect(Collectors.toList());
         // @formatter:on
 

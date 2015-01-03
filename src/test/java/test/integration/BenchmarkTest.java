@@ -20,6 +20,7 @@ import java.util.function.Predicate;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
@@ -101,6 +102,7 @@ public class BenchmarkTest {
     }
 
     @Test
+    @Ignore
     public void iterating_analyser()
     {
         // given
