@@ -9,6 +9,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -24,6 +29,8 @@ public class ConcurrentAnalyser extends FraudAnalyser {
     private final int maxAllowedByUserToAccount;
     private final List<Pair<Integer, BigDecimal>> thresholds;
 
+    private final Executor executor;
+
     public ConcurrentAnalyser(
             final Predicate<Transaction> skipAnalysis,
             final Predicate<Transaction> suspectIndividually,
@@ -36,6 +43,17 @@ public class ConcurrentAnalyser extends FraudAnalyser {
         this.maxAllowedFromAccount = maxAllowedFromAccount;
         this.maxAllowedByUserToAccount = maxAllowedByUserToAccount;
         this.thresholds = checkNotNull(thresholds);
+
+        final int availableProcessors = Runtime.getRuntime().availableProcessors();
+        executor = Executors.newFixedThreadPool(availableProcessors,
+                new ThreadFactory() {
+                    @Override
+                    public Thread newThread(final Runnable runnable) {
+                        final Thread thread = new Thread(runnable);
+                        thread.setDaemon(true);
+                        return thread;
+                    }
+                });
     }
 
     @Override
@@ -44,13 +62,27 @@ public class ConcurrentAnalyser extends FraudAnalyser {
         final List<Transaction> all = newArrayList(transactions);
         final List<Transaction> toAnalyse = toAnalyse(all);
 
-        final List<Transaction> individually = suspiciousIndividually(toAnalyse);
-        final List<Transaction> countFromAccount = suspiciousBasedOnCountFromAccount(toAnalyse);
-        final List<Transaction> countByUserToAccount = suspiciousBasedOnCountByUserToAccount(toAnalyse);
-        final List<Transaction> countAndTotalAmountByUser = suspiciousBasedOnCountAndTotalAmountByUser(toAnalyse);
+        final CompletableFuture<List<Transaction>> futureIndivudually = futureSuspiciousIndividually(toAnalyse);
+        final CompletableFuture<List<Transaction>> futureCountFromAccount = futureSuspiciousBasedOnCountFromAccount(toAnalyse);
+        final CompletableFuture<List<Transaction>> futureCountByUserToAccount = futureSuspiciousBasedOnCountByUserToAccount(toAnalyse);
+        final CompletableFuture<List<Transaction>> futureCountAndTotalAmountByUser = futureSuspiciousBasedOnCountAndTotalAmountByUser(toAnalyse);
 
-        final List<Transaction> suspicious = distinctElements(individually, countFromAccount, countByUserToAccount, countAndTotalAmountByUser);
-        return suspicious.iterator();
+        final CompletableFuture<Void> allLists =
+                CompletableFuture.allOf(futureIndivudually, futureCountFromAccount, futureCountByUserToAccount, futureCountAndTotalAmountByUser);
+
+        try {
+            allLists.get();
+            final List<Transaction> suspicious =
+                    distinctElements(
+                            futureIndivudually.get(),
+                            futureCountFromAccount.get(),
+                            futureCountByUserToAccount.get(),
+                            futureCountAndTotalAmountByUser.get()
+                    );
+            return suspicious.iterator();
+        } catch (final InterruptedException | ExecutionException ex) {
+            throw new IllegalArgumentException(ex);
+        }
     }
 
     @SafeVarargs
@@ -73,6 +105,11 @@ public class ConcurrentAnalyser extends FraudAnalyser {
         return toAnalyse;
     }
 
+    private CompletableFuture<List<Transaction>> futureSuspiciousIndividually(final List<Transaction> transactions) {
+
+        return CompletableFuture.supplyAsync(() -> suspiciousIndividually(transactions), executor);
+    }
+
     private List<Transaction> suspiciousIndividually(final List<Transaction> transactions)
     {
         final List<Transaction> suspicious = transactions.stream()
@@ -80,6 +117,11 @@ public class ConcurrentAnalyser extends FraudAnalyser {
                 .collect(Collectors.toList());
 
         return suspicious;
+    }
+
+    private CompletableFuture<List<Transaction>> futureSuspiciousBasedOnCountFromAccount(final List<Transaction> transactions) {
+
+        return CompletableFuture.supplyAsync(() -> suspiciousBasedOnCountFromAccount(transactions), executor);
     }
 
     private List<Transaction> suspiciousBasedOnCountFromAccount(final List<Transaction> transactions)
@@ -95,6 +137,11 @@ public class ConcurrentAnalyser extends FraudAnalyser {
         return suspicious;
     }
 
+    private CompletableFuture<List<Transaction>> futureSuspiciousBasedOnCountByUserToAccount(final List<Transaction> transactions) {
+
+        return CompletableFuture.supplyAsync(() -> suspiciousBasedOnCountByUserToAccount(transactions), executor);
+    }
+
     private List<Transaction> suspiciousBasedOnCountByUserToAccount(final List<Transaction> transactions)
     {
         final Map<Long, Map<Long, List<Transaction>>> grouppedByUserAndToAccount = transactions.stream()
@@ -107,6 +154,11 @@ public class ConcurrentAnalyser extends FraudAnalyser {
                 .collect(Collectors.toList());
 
         return suspicious;
+    }
+
+    private CompletableFuture<List<Transaction>> futureSuspiciousBasedOnCountAndTotalAmountByUser(final List<Transaction> transactions) {
+
+        return CompletableFuture.supplyAsync(() -> suspiciousBasedOnCountAndTotalAmountByUser(transactions), executor);
     }
 
     private List<Transaction> suspiciousBasedOnCountAndTotalAmountByUser(final List<Transaction> transactions)
