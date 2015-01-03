@@ -17,6 +17,7 @@ import static test.analyser.TestGeneratorSettings.WHITELISTED_COUNT;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 
 import org.junit.AfterClass;
@@ -35,9 +36,9 @@ import com.carrotsearch.junitbenchmarks.annotation.BenchmarkHistoryChart;
 import com.carrotsearch.junitbenchmarks.annotation.BenchmarkMethodChart;
 
 @BenchmarkOptions(benchmarkRounds = BenchmarkTest.BENCHMARK_ROUNDS, warmupRounds = BenchmarkTest.WARMUP_ROUNDS)
-@BenchmarkMethodChart(filePrefix = "src/test/resources/benchmarks/graphs/filtering-out-skipped-method")
-@BenchmarkHistoryChart(filePrefix = "src/test/resources/benchmarks/graphs/filtering-out-skipped-history")
-public class FilteringOutSkippedBenchmarkTest {
+@BenchmarkMethodChart(filePrefix = "src/test/resources/benchmarks/graphs/filtering-individual-method")
+@BenchmarkHistoryChart(filePrefix = "src/test/resources/benchmarks/graphs/filtering-individual-history")
+public class AnalysisPhasesBenchmarkTest {
 
     // Benchmark settings
 
@@ -56,6 +57,9 @@ public class FilteringOutSkippedBenchmarkTest {
 
     private static List<Transaction> ALL_TRANSACTIONS;
     private static List<Transaction> TO_ANALYSE;
+    private static List<Transaction> INDIVIDUALLY;
+    private static List<Transaction> COUNT_FROM_ACCOUNT;
+    private static List<Transaction> COUNT_BY_USER_TO_ACCOUNT;
 
     @BeforeClass
     public static void setup()
@@ -75,27 +79,74 @@ public class FilteringOutSkippedBenchmarkTest {
         final Iterator<Transaction> iterator = GENERATOR.generateIterator(NUMBER_OF_TRANSACTIONS);
 
         ALL_TRANSACTIONS = newArrayList(iterator);
+        TO_ANALYSE = ANALYSER.skipWhitelistedConcurrently(ALL_TRANSACTIONS);
     }
 
     @AfterClass
     public static void tearDown()
     {
         // then
-        final long count = TO_ANALYSE.parallelStream().count();
-        assertThat(count, is(equalTo(299_256L)));
+        if (INDIVIDUALLY != null) {
+            final long count = INDIVIDUALLY.parallelStream().count();
+            assertThat(count, is(equalTo(33_426L)));
+            INDIVIDUALLY = null;
+        }
+
+        if (COUNT_FROM_ACCOUNT != null) {
+            final long count = COUNT_FROM_ACCOUNT.parallelStream().count();
+            assertThat(count, is(equalTo(5_986L)));
+            COUNT_FROM_ACCOUNT = null;
+        }
+
+        if (COUNT_BY_USER_TO_ACCOUNT != null) {
+            final long count = COUNT_BY_USER_TO_ACCOUNT.parallelStream().count();
+            assertThat(count, is(equalTo(338l)));
+            COUNT_BY_USER_TO_ACCOUNT = null;
+        }
     }
 
     @Test
-    public void filtering_out_skipped()
+    public void filtering_individual()
     {
         // when
-        TO_ANALYSE = ANALYSER.skipWhitelisted(ALL_TRANSACTIONS);
+        INDIVIDUALLY = ANALYSER.individually(TO_ANALYSE);
     }
 
     @Test
-    public void filtering_out_skipped__concurrent()
+    public void filtering_individual__concurrent()
     {
         // when
-        TO_ANALYSE = ANALYSER.skipWhitelistedConcurrently(ALL_TRANSACTIONS);
+        final CompletableFuture<List<Transaction>> promise = ANALYSER.individuallyPromise(TO_ANALYSE);
+        INDIVIDUALLY = promise.join();
+    }
+
+    @Test
+    public void count_from_account()
+    {
+        // when
+        COUNT_FROM_ACCOUNT = ANALYSER.countFromAccount(TO_ANALYSE);
+    }
+
+    @Test
+    public void count_from_account__concurrent()
+    {
+        // when
+        final CompletableFuture<List<Transaction>> promise = ANALYSER.countFromAccountPromise(TO_ANALYSE);
+        COUNT_FROM_ACCOUNT = promise.join();
+    }
+
+    @Test
+    public void count_by_user_to_account()
+    {
+        // when
+        COUNT_BY_USER_TO_ACCOUNT = ANALYSER.countByUserToAccount(TO_ANALYSE);
+    }
+
+    @Test
+    public void count_by_user_to_account__concurrent()
+    {
+        // when
+        final CompletableFuture<List<Transaction>> promise = ANALYSER.countByUserToAccountPromise(TO_ANALYSE);
+        COUNT_BY_USER_TO_ACCOUNT = promise.join();
     }
 }

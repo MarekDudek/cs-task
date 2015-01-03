@@ -101,12 +101,10 @@ public class ConcurrentAnalyser extends FraudAnalyser {
     @VisibleForTesting
     List<Transaction> skipWhitelistedConcurrently(final List<Transaction> transactions)
     {
-        final CompletableFuture<List<Transaction>> future =
-                CompletableFuture.supplyAsync(
-                        () -> skipWhitelisted(transactions)
-                        , executor
-                        );
-        return future.join();
+        final CompletableFuture<List<Transaction>> promise =
+                CompletableFuture.supplyAsync(() -> skipWhitelisted(transactions), executor);
+
+        return promise.join();
     }
 
     @VisibleForTesting
@@ -119,12 +117,14 @@ public class ConcurrentAnalyser extends FraudAnalyser {
         return toAnalyse;
     }
 
-    private CompletableFuture<List<Transaction>> individuallyPromise(final List<Transaction> transactions) {
+    @VisibleForTesting
+    CompletableFuture<List<Transaction>> individuallyPromise(final List<Transaction> transactions) {
 
         return CompletableFuture.supplyAsync(() -> individually(transactions), executor);
     }
 
-    private List<Transaction> individually(final List<Transaction> transactions)
+    @VisibleForTesting
+    List<Transaction> individually(final List<Transaction> transactions)
     {
         final List<Transaction> suspicious = transactions.parallelStream()
                 .filter(suspectIndividually)
@@ -133,12 +133,14 @@ public class ConcurrentAnalyser extends FraudAnalyser {
         return suspicious;
     }
 
-    private CompletableFuture<List<Transaction>> countFromAccountPromise(final List<Transaction> transactions) {
+    @VisibleForTesting
+    CompletableFuture<List<Transaction>> countFromAccountPromise(final List<Transaction> transactions) {
 
         return CompletableFuture.supplyAsync(() -> countFromAccount(transactions), executor);
     }
 
-    private List<Transaction> countFromAccount(final List<Transaction> transactions)
+    @VisibleForTesting
+    List<Transaction> countFromAccount(final List<Transaction> transactions)
     {
         final Map<Long, List<Transaction>> grouppedByFromAccount = transactions.parallelStream()
                 .collect(Collectors.groupingByConcurrent(Transaction::getAccountFromId));
@@ -151,12 +153,14 @@ public class ConcurrentAnalyser extends FraudAnalyser {
         return suspicious;
     }
 
-    private CompletableFuture<List<Transaction>> countByUserToAccountPromise(final List<Transaction> transactions) {
+    @VisibleForTesting
+    CompletableFuture<List<Transaction>> countByUserToAccountPromise(final List<Transaction> transactions) {
 
         return CompletableFuture.supplyAsync(() -> countByUserToAccount(transactions), executor);
     }
 
-    private List<Transaction> countByUserToAccount(final List<Transaction> transactions)
+    @VisibleForTesting
+    List<Transaction> countByUserToAccount(final List<Transaction> transactions)
     {
         final Map<Long, ConcurrentMap<Long, List<Transaction>>> grouppedByUserAndToAccount = transactions.parallelStream()
                 .collect(Collectors.groupingByConcurrent(Transaction::getUserId, Collectors.groupingByConcurrent(Transaction::getAccountToId)));
