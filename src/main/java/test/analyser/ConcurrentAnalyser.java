@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -127,7 +128,7 @@ public class ConcurrentAnalyser extends FraudAnalyser {
     private List<Transaction> suspiciousBasedOnCountFromAccount(final List<Transaction> transactions)
     {
         final Map<Long, List<Transaction>> grouppedByFromAccount = transactions.parallelStream()
-                .collect(Collectors.groupingBy(Transaction::getAccountFromId));
+                .collect(Collectors.groupingByConcurrent(Transaction::getAccountFromId));
 
         final List<Transaction> suspicious = grouppedByFromAccount.values().parallelStream()
                 .filter(list -> list.size() > maxAllowedFromAccount)
@@ -144,8 +145,8 @@ public class ConcurrentAnalyser extends FraudAnalyser {
 
     private List<Transaction> suspiciousBasedOnCountByUserToAccount(final List<Transaction> transactions)
     {
-        final Map<Long, Map<Long, List<Transaction>>> grouppedByUserAndToAccount = transactions.parallelStream()
-                .collect(Collectors.groupingBy(Transaction::getUserId, Collectors.groupingBy(Transaction::getAccountToId)));
+        final Map<Long, ConcurrentMap<Long, List<Transaction>>> grouppedByUserAndToAccount = transactions.parallelStream()
+                .collect(Collectors.groupingByConcurrent(Transaction::getUserId, Collectors.groupingByConcurrent(Transaction::getAccountToId)));
 
         final List<Transaction> suspicious = grouppedByUserAndToAccount.values().parallelStream()
                 .flatMap(byToAccountMap -> byToAccountMap.values().parallelStream())
@@ -164,7 +165,7 @@ public class ConcurrentAnalyser extends FraudAnalyser {
     private List<Transaction> suspiciousBasedOnCountAndTotalAmountByUser(final List<Transaction> transactions)
     {
         final Map<Long, List<Transaction>> grouppedByUser = transactions.parallelStream()
-                .collect(Collectors.groupingBy(Transaction::getUserId));
+                .collect(Collectors.groupingByConcurrent(Transaction::getUserId));
 
         // @formatter:off
         final List<Transaction> suspicious = grouppedByUser.values()
