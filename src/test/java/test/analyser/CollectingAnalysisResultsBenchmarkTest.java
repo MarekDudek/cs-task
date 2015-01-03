@@ -38,8 +38,8 @@ import com.carrotsearch.junitbenchmarks.annotation.BenchmarkHistoryChart;
 import com.carrotsearch.junitbenchmarks.annotation.BenchmarkMethodChart;
 
 @BenchmarkOptions(benchmarkRounds = BenchmarkTest.BENCHMARK_ROUNDS, warmupRounds = BenchmarkTest.WARMUP_ROUNDS)
-@BenchmarkMethodChart(filePrefix = "src/test/resources/benchmarks/graphs/filtering-individual-method")
-@BenchmarkHistoryChart(filePrefix = "src/test/resources/benchmarks/graphs/filtering-individual-history")
+@BenchmarkMethodChart(filePrefix = "src/test/resources/benchmarks/graphs/collecting-analysis-results-method")
+@BenchmarkHistoryChart(filePrefix = "src/test/resources/benchmarks/graphs/collecting-analysis-results-history")
 public class CollectingAnalysisResultsBenchmarkTest {
     // Benchmark settings
 
