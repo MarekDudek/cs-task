@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Lists.newArrayList;
 
 import java.math.BigDecimal;
+import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -70,6 +71,19 @@ public class ConcurrentAnalyser extends FraudAnalyser {
         final CompletableFuture<List<Transaction>> countByUserToAccount = countByUserToAccountPromise(toAnalyse);
         final CompletableFuture<List<Transaction>> countAndTotalAmountByUser = countAndTotalAmountByUserPromise(toAnalyse);
 
+        final Collection<Transaction> suspicious = combineDistinctElements(individually, countFromAccount, countByUserToAccount, countAndTotalAmountByUser);
+        return suspicious.iterator();
+    }
+
+    @VisibleForTesting
+    Collection<Transaction> combineDistinctElements
+            (
+                    final CompletableFuture<List<Transaction>> individually,
+                    final CompletableFuture<List<Transaction>> countFromAccount,
+                    final CompletableFuture<List<Transaction>> countByUserToAccount,
+                    final CompletableFuture<List<Transaction>> countAndTotalAmountByUser
+            )
+    {
         CompletableFuture.allOf(
                 individually,
                 countFromAccount,
@@ -84,7 +98,7 @@ public class ConcurrentAnalyser extends FraudAnalyser {
                         countByUserToAccount.join(),
                         countAndTotalAmountByUser.join()
                 );
-        return suspicious.iterator();
+        return suspicious;
     }
 
     @SafeVarargs
