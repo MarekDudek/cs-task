@@ -58,10 +58,6 @@ public class CollectingAnalysisResultsBenchmarkTest {
 
     private static List<Transaction> ALL_TRANSACTIONS;
     private static List<Transaction> TO_ANALYSE;
-    private static List<Transaction> INDIVIDUALLY;
-    private static List<Transaction> COUNT_FROM_ACCOUNT;
-    private static List<Transaction> COUNT_BY_USER_TO_ACCOUNT;
-    private static List<Transaction> COUNT_AND_TOTAL_AMOUNT_BY_USER;
 
     private static CompletableFuture<List<Transaction>> INDIVIDUAL_PROMISE;
     private static CompletableFuture<List<Transaction>> COUNT_FROM_ACCOUNT_PROMISE;

@@ -1,13 +1,15 @@
 package test.integration;
 
 import static com.google.common.collect.Lists.newArrayList;
-import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static solution.PredicateFactory.belongsTo;
 import static solution.PredicateFactory.sameDate;
 import static test.analyser.TestGeneratorSettings.BLACKLISTED_COUNT;
 import static test.analyser.TestGeneratorSettings.CONFIG;
 import static test.analyser.TestGeneratorSettings.DUE_DAY;
+import static test.analyser.TestGeneratorSettings.EXPECTED_NUMBER_OF_ALL_SUSPICIOUS;
 import static test.analyser.TestGeneratorSettings.MAX_ALLOWED_BY_USER_TO_ACCOUNT;
 import static test.analyser.TestGeneratorSettings.MAX_ALLOWED_FROM_ACCOUNT;
 import static test.analyser.TestGeneratorSettings.NUMBER_OF_TRANSACTIONS;
@@ -114,7 +116,7 @@ public class BenchmarkTest {
     {
         // then
         final long count = newArrayList(SUSPICIOUS).parallelStream().count();
-        assertThat(count, greaterThan(1_000L));
+        assertThat((int) count, is(equalTo(EXPECTED_NUMBER_OF_ALL_SUSPICIOUS)));
     }
 
     @Test
