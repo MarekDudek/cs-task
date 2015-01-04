@@ -34,7 +34,6 @@ import solution.collectors.TransactionCountToAccountByUserCollector;
 import solution.transactions.TransactionGenerator;
 import test.analyser.ConcurrentAnalyser;
 import test.analyser.FraudAnalyser;
-import test.analyser.IteratingFraudAnalyser;
 import test.analyser.LambdaAnalyser;
 import test.analyser.SimpleFraudAnalyser;
 import test.transactions.Transaction;
@@ -62,13 +61,11 @@ public class BenchmarkTest {
     private static Predicate<Transaction> SKIP_ANALYSIS;
     private static Predicate<Transaction> SUSPECT_INDIVIDUALLY;
     private static StatsCollector COLLECTOR_SIMPLE_ANALYSER;
-    private static StatsCollector COLLECTOR_ITERATING_ANALYSER;
 
     private static List<Transaction> TRANSACTIONS;
     private static Iterator<Transaction> SUSPICIOUS;
 
     private static FraudAnalyser SIMPLE_ANALYSER;
-    private static FraudAnalyser ITERATING_ANALYSER;
     private static FraudAnalyser LAMBDA_ANALYSER;
     private static FraudAnalyser CONCURRENT_ANALYSER;
 
@@ -91,17 +88,8 @@ public class BenchmarkTest {
                         new TransactionCountFromUserAndSumTotalCollector(THRESHOLDS)
                 );
 
-        COLLECTOR_ITERATING_ANALYSER = new MultiStatCollector
-                (
-                        new TransactionCountFromAccoutCollector(MAX_ALLOWED_FROM_ACCOUNT),
-                        new TransactionCountToAccountByUserCollector(MAX_ALLOWED_BY_USER_TO_ACCOUNT),
-                        new TransactionCountFromUserAndSumTotalCollector(THRESHOLDS)
-                );
-
         SIMPLE_ANALYSER =
                 new SimpleFraudAnalyser(SKIP_ANALYSIS, SUSPECT_INDIVIDUALLY, COLLECTOR_SIMPLE_ANALYSER);
-        ITERATING_ANALYSER =
-                new IteratingFraudAnalyser(SKIP_ANALYSIS, SUSPECT_INDIVIDUALLY, COLLECTOR_ITERATING_ANALYSER);
         LAMBDA_ANALYSER =
                 new LambdaAnalyser(SKIP_ANALYSIS, SUSPECT_INDIVIDUALLY, MAX_ALLOWED_FROM_ACCOUNT, MAX_ALLOWED_BY_USER_TO_ACCOUNT, THRESHOLDS);
         CONCURRENT_ANALYSER =
@@ -124,13 +112,6 @@ public class BenchmarkTest {
     {
         // when
         SUSPICIOUS = SIMPLE_ANALYSER.analyse(newArrayList(TRANSACTIONS).iterator(), DUE_DAY);
-    }
-
-    @Test
-    public void iterating_analyser()
-    {
-        // when
-        SUSPICIOUS = ITERATING_ANALYSER.analyse(newArrayList(TRANSACTIONS).iterator(), DUE_DAY);
     }
 
     @Test
