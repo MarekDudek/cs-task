@@ -21,6 +21,12 @@ public class TransactionCountToAccountByUserCollector implements StatsCollector 
     }
 
     @Override
+    public void clear()
+    {
+        transactionsPerAccountToAndUser.clear();
+    }
+
+    @Override
     public void collect(final Transaction transaction)
     {
         final Long accountTo = transaction.getAccountToId();

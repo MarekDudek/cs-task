@@ -59,9 +59,9 @@ public class BenchmarkTest {
 
     private static Predicate<Transaction> SKIP_ANALYSIS;
     private static Predicate<Transaction> SUSPECT_INDIVIDUALLY;
-    private static StatsCollector COLLECTOR;
+    private static StatsCollector COLLECTOR_SIMPLE_ANALYSER;
+    private static StatsCollector COLLECTOR_ITERATING_ANALYSER;
 
-    private static Iterator<Transaction> EAGER_ITERATOR;
     private static List<Transaction> TRANSACTIONS;
     private static Iterator<Transaction> SUSPICIOUS;
 
@@ -82,7 +82,14 @@ public class BenchmarkTest {
         final List<Long> blacklisted = GENERATOR.chooseBlacklisted(BLACKLISTED_COUNT);
         SUSPECT_INDIVIDUALLY = belongsTo(blacklisted);
 
-        COLLECTOR = new MultiStatCollector
+        COLLECTOR_SIMPLE_ANALYSER = new MultiStatCollector
+                (
+                        new TransactionCountFromAccoutCollector(MAX_ALLOWED_FROM_ACCOUNT),
+                        new TransactionCountToAccountByUserCollector(MAX_ALLOWED_BY_USER_TO_ACCOUNT),
+                        new TransactionCountFromUserAndSumTotalCollector(THRESHOLDS)
+                );
+
+        COLLECTOR_ITERATING_ANALYSER = new MultiStatCollector
                 (
                         new TransactionCountFromAccoutCollector(MAX_ALLOWED_FROM_ACCOUNT),
                         new TransactionCountToAccountByUserCollector(MAX_ALLOWED_BY_USER_TO_ACCOUNT),
@@ -90,9 +97,9 @@ public class BenchmarkTest {
                 );
 
         SIMPLE_ANALYSER =
-                new SimpleFraudAnalyser(SKIP_ANALYSIS, SUSPECT_INDIVIDUALLY, COLLECTOR);
+                new SimpleFraudAnalyser(SKIP_ANALYSIS, SUSPECT_INDIVIDUALLY, COLLECTOR_SIMPLE_ANALYSER);
         ITERATING_ANALYSER =
-                new IteratingFraudAnalyser(SKIP_ANALYSIS, SUSPECT_INDIVIDUALLY, COLLECTOR);
+                new IteratingFraudAnalyser(SKIP_ANALYSIS, SUSPECT_INDIVIDUALLY, COLLECTOR_ITERATING_ANALYSER);
         LAMBDA_ANALYSER =
                 new LambdaAnalyser(SKIP_ANALYSIS, SUSPECT_INDIVIDUALLY, MAX_ALLOWED_FROM_ACCOUNT, MAX_ALLOWED_BY_USER_TO_ACCOUNT, THRESHOLDS);
         CONCURRENT_ANALYSER =
