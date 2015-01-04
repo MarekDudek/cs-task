@@ -34,7 +34,6 @@ import solution.collectors.TransactionCountToAccountByUserCollector;
 import solution.transactions.TransactionGenerator;
 import test.analyser.ConcurrentAnalyser;
 import test.analyser.FraudAnalyser;
-import test.analyser.IteratingFraudAnalyser;
 import test.analyser.LambdaAnalyser;
 import test.analyser.SimpleFraudAnalyser;
 import test.transactions.Transaction;
@@ -73,35 +72,6 @@ public class ComparisonTest {
         final Set<Long> common = intersection(newHashSet(whitelisted), newHashSet(blacklisted));
         assertThat(common, is(empty()));
 
-        assertThat(newArrayList(suspicious), hasSize(EXPECTED_NUMBER_OF_ALL_SUSPICIOUS));
-    }
-
-    @Test
-    public void iterating_fraud_analyser()
-    {
-        // given
-        final TransactionGenerator generator = new TransactionGenerator(CONFIG);
-
-        final List<Long> whitelisted = generator.chooseWhitelisted(WHITELISTED_COUNT);
-        final Predicate<Transaction> skipAnalysis = belongsTo(whitelisted).or(sameDate(DUE_DAY).negate());
-
-        final List<Long> blacklisted = generator.chooseBlacklisted(BLACKLISTED_COUNT);
-        final Predicate<Transaction> suspectIndividually = belongsTo(blacklisted);
-
-        final StatsCollector collector = new MultiStatCollector
-                (
-                        new TransactionCountFromAccoutCollector(MAX_ALLOWED_FROM_ACCOUNT),
-                        new TransactionCountToAccountByUserCollector(MAX_ALLOWED_BY_USER_TO_ACCOUNT),
-                        new TransactionCountFromUserAndSumTotalCollector(THRESHOLDS)
-                );
-
-        final FraudAnalyser analyser = new IteratingFraudAnalyser(skipAnalysis, suspectIndividually, collector);
-
-        // when
-        final Iterator<Transaction> transactions = generator.generateIterator(NUMBER_OF_TRANSACTIONS);
-        final Iterator<Transaction> suspicious = analyser.analyse(transactions, DUE_DAY);
-
-        // then
         assertThat(newArrayList(suspicious), hasSize(EXPECTED_NUMBER_OF_ALL_SUSPICIOUS));
     }
 
