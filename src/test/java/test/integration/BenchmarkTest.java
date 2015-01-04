@@ -1,13 +1,15 @@
 package test.integration;
 
 import static com.google.common.collect.Lists.newArrayList;
-import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static solution.PredicateFactory.belongsTo;
 import static solution.PredicateFactory.sameDate;
 import static test.analyser.TestGeneratorSettings.BLACKLISTED_COUNT;
 import static test.analyser.TestGeneratorSettings.CONFIG;
 import static test.analyser.TestGeneratorSettings.DUE_DAY;
+import static test.analyser.TestGeneratorSettings.EXPECTED_NUMBER_OF_ALL_SUSPICIOUS;
 import static test.analyser.TestGeneratorSettings.MAX_ALLOWED_BY_USER_TO_ACCOUNT;
 import static test.analyser.TestGeneratorSettings.MAX_ALLOWED_FROM_ACCOUNT;
 import static test.analyser.TestGeneratorSettings.NUMBER_OF_TRANSACTIONS;
@@ -18,7 +20,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.function.Predicate;
 
-import org.junit.Before;
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
@@ -30,6 +32,7 @@ import solution.collectors.TransactionCountFromAccoutCollector;
 import solution.collectors.TransactionCountFromUserAndSumTotalCollector;
 import solution.collectors.TransactionCountToAccountByUserCollector;
 import solution.transactions.TransactionGenerator;
+import test.analyser.ConcurrentAnalyser;
 import test.analyser.FraudAnalyser;
 import test.analyser.IteratingFraudAnalyser;
 import test.analyser.LambdaAnalyser;
@@ -42,8 +45,8 @@ import com.carrotsearch.junitbenchmarks.annotation.BenchmarkHistoryChart;
 import com.carrotsearch.junitbenchmarks.annotation.BenchmarkMethodChart;
 
 @BenchmarkOptions(benchmarkRounds = BenchmarkTest.BENCHMARK_ROUNDS, warmupRounds = BenchmarkTest.WARMUP_ROUNDS)
-@BenchmarkMethodChart(filePrefix = "src/test/resources/benchmarks/graphs/benchmark-analysers-method")
-@BenchmarkHistoryChart(filePrefix = "src/test/resources/benchmarks/graphs/benchmark-analysers-history")
+@BenchmarkMethodChart(filePrefix = "src/test/resources/benchmarks/graphs/analysers-method")
+@BenchmarkHistoryChart(filePrefix = "src/test/resources/benchmarks/graphs/analysers-history")
 public class BenchmarkTest {
 
     // Benchmark settings
@@ -56,76 +59,91 @@ public class BenchmarkTest {
     @Rule
     public TestRule benchmarkRun = new BenchmarkRule();
 
-    private Predicate<Transaction> skipAnalysis;
-    private Predicate<Transaction> suspectIndividually;
-    private StatsCollector collector;
+    private static Predicate<Transaction> SKIP_ANALYSIS;
+    private static Predicate<Transaction> SUSPECT_INDIVIDUALLY;
+    private static StatsCollector COLLECTOR_SIMPLE_ANALYSER;
+    private static StatsCollector COLLECTOR_ITERATING_ANALYSER;
+
+    private static List<Transaction> TRANSACTIONS;
+    private static Iterator<Transaction> SUSPICIOUS;
+
+    private static FraudAnalyser SIMPLE_ANALYSER;
+    private static FraudAnalyser ITERATING_ANALYSER;
+    private static FraudAnalyser LAMBDA_ANALYSER;
+    private static FraudAnalyser CONCURRENT_ANALYSER;
 
     @BeforeClass
     public static void beforeSuite()
     {
         // given
         GENERATOR = new TransactionGenerator(CONFIG);
-    }
 
-    @Before
-    public void setUp()
-    {
-        // given
         final List<Long> whitelisted = GENERATOR.chooseWhitelisted(WHITELISTED_COUNT);
-        skipAnalysis = belongsTo(whitelisted).or(sameDate(DUE_DAY).negate());
+        SKIP_ANALYSIS = belongsTo(whitelisted).or(sameDate(DUE_DAY).negate());
 
         final List<Long> blacklisted = GENERATOR.chooseBlacklisted(BLACKLISTED_COUNT);
-        suspectIndividually = belongsTo(blacklisted);
+        SUSPECT_INDIVIDUALLY = belongsTo(blacklisted);
 
-        collector = new MultiStatCollector
+        COLLECTOR_SIMPLE_ANALYSER = new MultiStatCollector
                 (
                         new TransactionCountFromAccoutCollector(MAX_ALLOWED_FROM_ACCOUNT),
                         new TransactionCountToAccountByUserCollector(MAX_ALLOWED_BY_USER_TO_ACCOUNT),
                         new TransactionCountFromUserAndSumTotalCollector(THRESHOLDS)
                 );
+
+        COLLECTOR_ITERATING_ANALYSER = new MultiStatCollector
+                (
+                        new TransactionCountFromAccoutCollector(MAX_ALLOWED_FROM_ACCOUNT),
+                        new TransactionCountToAccountByUserCollector(MAX_ALLOWED_BY_USER_TO_ACCOUNT),
+                        new TransactionCountFromUserAndSumTotalCollector(THRESHOLDS)
+                );
+
+        SIMPLE_ANALYSER =
+                new SimpleFraudAnalyser(SKIP_ANALYSIS, SUSPECT_INDIVIDUALLY, COLLECTOR_SIMPLE_ANALYSER);
+        ITERATING_ANALYSER =
+                new IteratingFraudAnalyser(SKIP_ANALYSIS, SUSPECT_INDIVIDUALLY, COLLECTOR_ITERATING_ANALYSER);
+        LAMBDA_ANALYSER =
+                new LambdaAnalyser(SKIP_ANALYSIS, SUSPECT_INDIVIDUALLY, MAX_ALLOWED_FROM_ACCOUNT, MAX_ALLOWED_BY_USER_TO_ACCOUNT, THRESHOLDS);
+        CONCURRENT_ANALYSER =
+                new ConcurrentAnalyser(SKIP_ANALYSIS, SUSPECT_INDIVIDUALLY, MAX_ALLOWED_FROM_ACCOUNT, MAX_ALLOWED_BY_USER_TO_ACCOUNT, THRESHOLDS);
+
+        final Iterator<Transaction> lazyIterator = GENERATOR.generateIterator(NUMBER_OF_TRANSACTIONS);
+        TRANSACTIONS = newArrayList(lazyIterator);
+    }
+
+    @AfterClass
+    public static void tearDown()
+    {
+        // then
+        final long count = newArrayList(SUSPICIOUS).parallelStream().count();
+        assertThat((int) count, is(equalTo(EXPECTED_NUMBER_OF_ALL_SUSPICIOUS)));
     }
 
     @Test
     public void simple_analyser()
     {
-        // given
-        final FraudAnalyser analyser =
-                new SimpleFraudAnalyser(skipAnalysis, suspectIndividually, collector);
         // when
-        final Iterator<Transaction> transactions = GENERATOR.generateIterator(NUMBER_OF_TRANSACTIONS);
-        final Iterator<Transaction> suspicious = analyser.analyse(transactions, DUE_DAY);
-
-        // then
-        assertThat(newArrayList(suspicious).size(), greaterThan(0));
+        SUSPICIOUS = SIMPLE_ANALYSER.analyse(newArrayList(TRANSACTIONS).iterator(), DUE_DAY);
     }
 
     @Test
     public void iterating_analyser()
     {
-        // given
-        final FraudAnalyser analyser =
-                new IteratingFraudAnalyser(skipAnalysis, suspectIndividually, collector);
-
         // when
-        final Iterator<Transaction> transactions = GENERATOR.generateIterator(NUMBER_OF_TRANSACTIONS);
-        final Iterator<Transaction> suspicious = analyser.analyse(transactions, DUE_DAY);
-
-        // then
-        assertThat(newArrayList(suspicious).size(), greaterThan(0));
+        SUSPICIOUS = ITERATING_ANALYSER.analyse(newArrayList(TRANSACTIONS).iterator(), DUE_DAY);
     }
 
     @Test
     public void lambda_analyser()
     {
-        // given
-        final FraudAnalyser analyser =
-                new LambdaAnalyser(skipAnalysis, suspectIndividually, MAX_ALLOWED_FROM_ACCOUNT, MAX_ALLOWED_BY_USER_TO_ACCOUNT, THRESHOLDS);
-
         // when
-        final Iterator<Transaction> transactions = GENERATOR.generateIterator(NUMBER_OF_TRANSACTIONS);
-        final Iterator<Transaction> suspicious = analyser.analyse(transactions, DUE_DAY);
+        SUSPICIOUS = LAMBDA_ANALYSER.analyse(newArrayList(TRANSACTIONS).iterator(), DUE_DAY);
+    }
 
-        // then
-        assertThat(newArrayList(suspicious).size(), greaterThan(0));
+    @Test
+    public void concurrent_analyser()
+    {
+        // when
+        SUSPICIOUS = CONCURRENT_ANALYSER.analyse(newArrayList(TRANSACTIONS).iterator(), DUE_DAY);
     }
 }

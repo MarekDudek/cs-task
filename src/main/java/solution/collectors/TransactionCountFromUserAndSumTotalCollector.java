@@ -25,6 +25,13 @@ public class TransactionCountFromUserAndSumTotalCollector implements StatsCollec
     }
 
     @Override
+    public void clear()
+    {
+        transactionsPerUser.clear();
+        sumPerUser.clear();
+    }
+
+    @Override
     public void collect(final Transaction transaction)
     {
         final Long user = transaction.getUserId();
@@ -49,7 +56,7 @@ public class TransactionCountFromUserAndSumTotalCollector implements StatsCollec
     }
 
     @Override
-    public Collection<Transaction> suspicious()
+    public List<Transaction> suspicious()
     {
         final List<Transaction> union = newArrayList();
 

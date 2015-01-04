@@ -1,15 +1,16 @@
 package solution.collectors;
 
 import static com.google.common.collect.Lists.newArrayList;
-import static com.google.common.collect.Sets.newHashSet;
 
-import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import test.transactions.Transaction;
 
 public class MultiStatCollector implements StatsCollector {
 
-    private Collection<StatsCollector> collectors;
+    private List<StatsCollector> collectors;
 
     public MultiStatCollector(final StatsCollector... collectors)
     {
@@ -17,24 +18,27 @@ public class MultiStatCollector implements StatsCollector {
     }
 
     @Override
-    public void collect(final Transaction transaction)
+    public void clear()
     {
-        for (final StatsCollector collector : collectors)
-        {
-            collector.collect(transaction);
-        }
+        collectors.stream()
+                .forEach(collector -> collector.clear());
     }
 
     @Override
-    public Collection<Transaction> suspicious()
+    public void collect(final Transaction transaction)
     {
-        final Collection<Transaction> union = newHashSet();
+        collectors.stream()
+                .forEach(collector -> collector.collect(transaction));
+    }
 
-        for (final StatsCollector collector : collectors)
-        {
-            union.addAll(collector.suspicious());
-        }
+    @Override
+    public List<Transaction> suspicious()
+    {
+        final Set<Transaction> union = collectors.stream()
+                .map(collector -> collector.suspicious())
+                .flatMap(List::stream)
+                .collect(Collectors.toSet());
 
-        return union;
+        return newArrayList(union);
     }
 }

@@ -40,6 +40,11 @@ public class IteratingFraudAnalyser extends FraudAnalyser {
     @Override
     public Iterator<Transaction> analyse(final Iterator<Transaction> transactions, final Date date)
     {
+        cache.clear();
+        suspicious.clear();
+        collector.clear();
+        inputExhausted = false;
+
         return new FilteringIterator<Transaction>(transactions, skipAnalysis.negate()) {
 
             @Override
