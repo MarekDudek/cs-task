@@ -4,6 +4,7 @@ import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Maps.newHashMap;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 import test.transactions.Transaction;
@@ -39,9 +40,9 @@ public class TransactionCountFromAccoutCollector implements StatsCollector {
     }
 
     @Override
-    public Collection<Transaction> suspicious()
+    public List<Transaction> suspicious()
     {
-        final Collection<Transaction> union = newArrayList();
+        final List<Transaction> union = newArrayList();
 
         for (final Long account : transactionsPerFromAccount.keySet())
         {

@@ -56,7 +56,7 @@ public class TransactionCountFromUserAndSumTotalCollector implements StatsCollec
     }
 
     @Override
-    public Collection<Transaction> suspicious()
+    public List<Transaction> suspicious()
     {
         final List<Transaction> union = newArrayList();
 

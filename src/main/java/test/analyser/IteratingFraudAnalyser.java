@@ -43,6 +43,7 @@ public class IteratingFraudAnalyser extends FraudAnalyser {
         cache.clear();
         suspicious.clear();
         collector.clear();
+        inputExhausted = false;
 
         return new FilteringIterator<Transaction>(transactions, skipAnalysis.negate()) {
 
