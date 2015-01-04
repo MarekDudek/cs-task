@@ -51,7 +51,7 @@ Benchmarks
   
   Results are available in file `src/test/resources/benchmarks/graphs/analysers-history.html`. 
   
-  It shows that *lambda* analyser is almost two times faster than simple solution. Despite performing the same algorithm.
+  It shows that *lambda* analyser is almost two times faster than simple solution despite performing the same algorithm.
   
   Concurrent version performs almost four times better then *lambda* version on eight processor machine. Far from maximum speed-up allowed by Amdahl's law but still impressive considering how little effort it took to implement.
   
