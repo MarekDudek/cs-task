@@ -3,4 +3,9 @@
 /.settings
 /target
 
+/.idea
+creditsuisse.iml
+
+*.swp
+
 /src/test/resources/benchmarks/graphs/
