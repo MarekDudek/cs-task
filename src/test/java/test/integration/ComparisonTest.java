@@ -32,10 +32,7 @@ import solution.collectors.TransactionCountFromAccoutCollector;
 import solution.collectors.TransactionCountFromUserAndSumTotalCollector;
 import solution.collectors.TransactionCountToAccountByUserCollector;
 import solution.transactions.TransactionGenerator;
-import test.analyser.ConcurrentAnalyser;
-import test.analyser.FraudAnalyser;
-import test.analyser.LambdaAnalyser;
-import test.analyser.SimpleFraudAnalyser;
+import test.analyser.*;
 import test.transactions.Transaction;
 
 public class ComparisonTest {

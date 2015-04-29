@@ -45,6 +45,7 @@ public class LambdaAnalyser extends FraudAnalyser {
         final List<Transaction> toAnalyse = toAnalyse(all);
 
         final List<Transaction> individually = suspiciousIndividually(toAnalyse);
+        System.out.format("%d suspected individually", individually.size());
         final List<Transaction> countFromAccount = suspiciousBasedOnCountFromAccount(toAnalyse);
         final List<Transaction> countByUserToAccount = suspiciousBasedOnCountByUserToAccount(toAnalyse);
         final List<Transaction> countAndTotalAmountByUser = suspiciousBasedOnCountAndTotalAmountByUser(toAnalyse);
@@ -111,11 +112,11 @@ public class LambdaAnalyser extends FraudAnalyser {
 
     private List<Transaction> suspiciousBasedOnCountAndTotalAmountByUser(final List<Transaction> transactions)
     {
-        final Map<Long, List<Transaction>> grouppedByUser = transactions.stream()
+        final Map<Long, List<Transaction>> groupedByUser = transactions.stream()
                 .collect(Collectors.groupingBy(Transaction::getUserId));
 
         // @formatter:off
-        final List<Transaction> suspicious = grouppedByUser.values()
+        final List<Transaction> suspicious = groupedByUser.values()
                 .stream()
                 .filter(list -> thresholds.stream()
                         .anyMatch(

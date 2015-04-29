@@ -1,5 +1,6 @@
 package test.transactions;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
 
@@ -9,7 +10,8 @@ import com.google.common.base.MoreObjects;
  * This is single transaction. Imagine that This class is part of another
  * system.
  */
-public class Transaction {
+@SuppressWarnings("serial")
+public class Transaction implements Serializable {
 
     private BigDecimal amount;
     private Long userId;
