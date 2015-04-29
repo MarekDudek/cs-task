@@ -46,7 +46,7 @@ public class SparkAnalyserTest implements Serializable {
         final List<Long> blacklisted = generator.chooseBlacklisted(BLACKLISTED_COUNT);
         final Function<Transaction, Boolean> suspectIndividually = new Function<Transaction, Boolean>() {
             @Override
-            public Boolean call(final Transaction transaction) throws Exception {
+            public Boolean call(final Transaction transaction) {
                 return blacklisted.contains(transaction.getUserId());
             }
         };
@@ -54,12 +54,12 @@ public class SparkAnalyserTest implements Serializable {
         final List<Long> whitelisted = generator.chooseWhitelisted(WHITELISTED_COUNT);
         final Function<Transaction, Boolean> allowAnalysis = new Function<Transaction, Boolean>() {
             @Override
-            public Boolean call(final Transaction transaction) throws Exception {
+            public Boolean call(final Transaction transaction) {
                 return isFalse(whitelisted.contains(transaction.getUserId())) && isSameDay(transaction.getDate(), DUE_DAY);
             }
         };
 
-        final FraudAnalyser analyser = new SparkAnalyser(CONTEXT, allowAnalysis, suspectIndividually);
+        final FraudAnalyser analyser = new SparkAnalyser(CONTEXT, allowAnalysis, suspectIndividually, MAX_ALLOWED_FROM_ACCOUNT);
 
         // when
         final Iterator<Transaction> transactions = generator.generateIterator(NUMBER_OF_TRANSACTIONS);
