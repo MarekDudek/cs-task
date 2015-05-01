@@ -97,7 +97,7 @@ public final class SparkAnalyser extends FraudAnalyser implements Serializable {
 
         final Function<Tuple2<Long, Iterable<Transaction>>, Boolean> exceedsCountAndTotal = new Function<Tuple2<Long, Iterable<Transaction>>, Boolean>() {
             @Override
-            public Boolean call(final Tuple2<Long, Iterable<Transaction>> transactionsByUser) throws Exception {
+            public Boolean call(final Tuple2<Long, Iterable<Transaction>> transactionsByUser) {
                 final List<Transaction> transactions = copyOf(transactionsByUser._2());
                 return thresholds.stream().anyMatch(
                         ((Predicate<Pair<Integer, BigDecimal>>)
