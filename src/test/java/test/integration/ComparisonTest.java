@@ -1,48 +1,35 @@
 package test.integration;
 
-import static com.google.common.collect.Lists.newArrayList;
-import static com.google.common.collect.Sets.intersection;
-import static com.google.common.collect.Sets.newHashSet;
-import static org.hamcrest.Matchers.empty;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-import static solution.PredicateFactory.belongsTo;
-import static solution.PredicateFactory.sameDate;
-import static test.analyser.TestGeneratorSettings.BLACKLISTED_COUNT;
-import static test.analyser.TestGeneratorSettings.CONFIG;
-import static test.analyser.TestGeneratorSettings.DUE_DAY;
-import static test.analyser.TestGeneratorSettings.EXPECTED_NUMBER_OF_ALL_SUSPICIOUS;
-import static test.analyser.TestGeneratorSettings.MAX_ALLOWED_BY_USER_TO_ACCOUNT;
-import static test.analyser.TestGeneratorSettings.MAX_ALLOWED_FROM_ACCOUNT;
-import static test.analyser.TestGeneratorSettings.NUMBER_OF_TRANSACTIONS;
-import static test.analyser.TestGeneratorSettings.THRESHOLDS;
-import static test.analyser.TestGeneratorSettings.WHITELISTED_COUNT;
+import org.apache.spark.SparkConf;
+import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.api.java.function.Function;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import solution.collectors.*;
+import solution.transactions.TransactionGenerator;
+import test.analyser.*;
+import test.transactions.Transaction;
 
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
 
-import org.junit.Test;
-
-import solution.collectors.MultiStatCollector;
-import solution.collectors.StatsCollector;
-import solution.collectors.TransactionCountFromAccoutCollector;
-import solution.collectors.TransactionCountFromUserAndSumTotalCollector;
-import solution.collectors.TransactionCountToAccountByUserCollector;
-import solution.transactions.TransactionGenerator;
-import test.analyser.ConcurrentAnalyser;
-import test.analyser.FraudAnalyser;
-import test.analyser.LambdaAnalyser;
-import test.analyser.SimpleFraudAnalyser;
-import test.transactions.Transaction;
+import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.collect.Sets.intersection;
+import static com.google.common.collect.Sets.newHashSet;
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.assertThat;
+import static solution.PredicateFactory.belongsTo;
+import static solution.PredicateFactory.sameDate;
+import static test.analyser.TestGeneratorSettings.*;
 
 public class ComparisonTest {
 
     @Test
-    public void simple_fraud_analyser()
-    {
+    public void simple_fraud_analyser() {
         // given
         final TransactionGenerator generator = new TransactionGenerator(CONFIG);
 
@@ -76,8 +63,7 @@ public class ComparisonTest {
     }
 
     @Test
-    public void lambda_fraud_analyser()
-    {
+    public void lambda_fraud_analyser() {
         // given
         final TransactionGenerator generator = new TransactionGenerator(CONFIG);
 
@@ -99,8 +85,7 @@ public class ComparisonTest {
     }
 
     @Test
-    public void concurrent_fraud_analyser()
-    {
+    public void concurrent_fraud_analyser() {
         // given
         final TransactionGenerator generator = new TransactionGenerator(CONFIG);
 
@@ -112,6 +97,46 @@ public class ComparisonTest {
 
         final FraudAnalyser analyser =
                 new ConcurrentAnalyser(skipAnalysis, suspectIndividually, MAX_ALLOWED_FROM_ACCOUNT, MAX_ALLOWED_BY_USER_TO_ACCOUNT, THRESHOLDS);
+
+        // when
+        final Iterator<Transaction> transactions = generator.generateIterator(NUMBER_OF_TRANSACTIONS);
+        final Iterator<Transaction> suspicious = analyser.analyse(transactions, DUE_DAY);
+
+        // then
+        assertThat(newArrayList(suspicious), hasSize(EXPECTED_NUMBER_OF_ALL_SUSPICIOUS));
+    }
+
+    private static JavaSparkContext CONTEXT;
+
+    @BeforeClass
+    public static void setUpClass() throws IOException {
+
+        final SparkConf config = new SparkConf();
+        config.setMaster("local");
+        config.setAppName("Spark Analyser job");
+
+        CONTEXT = new JavaSparkContext(config);
+    }
+
+    @AfterClass
+    public static void tearDownClass() {
+
+        CONTEXT.stop();
+    }
+
+    @Test
+    public void spark_fraud_analyser() {
+        // given
+        final TransactionGenerator generator = new TransactionGenerator(CONFIG);
+
+        final List<Long> whitelisted = generator.chooseWhitelisted(WHITELISTED_COUNT);
+        final Function<Transaction, Boolean> allowAnalysis = new SparkAnalyser.AllowAnalysisPredicate(whitelisted, DUE_DAY);
+
+        final List<Long> blacklisted = generator.chooseBlacklisted(BLACKLISTED_COUNT);
+        final Function<Transaction, Boolean> suspectIndividually = new SparkAnalyser.SuspectIndividually(blacklisted);
+
+        final FraudAnalyser analyser =
+                new SparkAnalyser(CONTEXT, allowAnalysis, suspectIndividually, MAX_ALLOWED_FROM_ACCOUNT, MAX_ALLOWED_BY_USER_TO_ACCOUNT, THRESHOLDS);
 
         // when
         final Iterator<Transaction> transactions = generator.generateIterator(NUMBER_OF_TRANSACTIONS);

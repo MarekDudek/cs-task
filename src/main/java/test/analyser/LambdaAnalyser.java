@@ -84,10 +84,10 @@ public class LambdaAnalyser extends FraudAnalyser {
 
     private List<Transaction> suspiciousBasedOnCountFromAccount(final List<Transaction> transactions)
     {
-        final Map<Long, List<Transaction>> grouppedByFromAccount = transactions.stream()
+        final Map<Long, List<Transaction>> groupedByFromAccount = transactions.stream()
                 .collect(Collectors.groupingBy(Transaction::getAccountFromId));
 
-        final List<Transaction> suspicious = grouppedByFromAccount.values().stream()
+        final List<Transaction> suspicious = groupedByFromAccount.values().stream()
                 .filter(list -> list.size() > maxAllowedFromAccount)
                 .flatMap(List::stream)
                 .collect(Collectors.toList());
@@ -97,10 +97,10 @@ public class LambdaAnalyser extends FraudAnalyser {
 
     private List<Transaction> suspiciousBasedOnCountByUserToAccount(final List<Transaction> transactions)
     {
-        final Map<Long, Map<Long, List<Transaction>>> grouppedByUserAndToAccount = transactions.stream()
+        final Map<Long, Map<Long, List<Transaction>>> groupedByUserAndToAccount = transactions.stream()
                 .collect(Collectors.groupingBy(Transaction::getUserId, Collectors.groupingBy(Transaction::getAccountToId)));
 
-        final List<Transaction> suspicious = grouppedByUserAndToAccount.values().stream()
+        final List<Transaction> suspicious = groupedByUserAndToAccount.values().stream()
                 .flatMap(byToAccountMap -> byToAccountMap.values().stream())
                 .filter(list -> list.size() > maxAllowedByUserToAccount)
                 .flatMap(List::stream)
@@ -111,11 +111,11 @@ public class LambdaAnalyser extends FraudAnalyser {
 
     private List<Transaction> suspiciousBasedOnCountAndTotalAmountByUser(final List<Transaction> transactions)
     {
-        final Map<Long, List<Transaction>> grouppedByUser = transactions.stream()
+        final Map<Long, List<Transaction>> groupedByUser = transactions.stream()
                 .collect(Collectors.groupingBy(Transaction::getUserId));
 
         // @formatter:off
-        final List<Transaction> suspicious = grouppedByUser.values()
+        final List<Transaction> suspicious = groupedByUser.values()
                 .stream()
                 .filter(list -> thresholds.stream()
                         .anyMatch(

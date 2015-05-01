@@ -1,5 +1,6 @@
 package solution.transactions;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Lists.newArrayListWithCapacity;
 
 import java.math.BigDecimal;
@@ -9,6 +10,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
+import com.google.common.collect.Lists;
 import solution.utils.RichGenerator;
 import test.transactions.Transaction;
 
@@ -52,7 +54,7 @@ public class TransactionGenerator {
 
     public List<Long> chooseWhitelisted(final int count)
     {
-        final List<Long> whitelisted = users.subList(0, count);
+        final List<Long> whitelisted = newArrayList(users.subList(0, count));
         return Collections.unmodifiableList(whitelisted);
     }
 
@@ -61,7 +63,7 @@ public class TransactionGenerator {
         final int last = users.size();
         final int first = last - count;
 
-        final List<Long> blacklisted = users.subList(first, last);
+        final List<Long> blacklisted = newArrayList(users.subList(first, last));
         return Collections.unmodifiableList(blacklisted);
     }
 

@@ -1,5 +1,6 @@
 package test.analyser;
 
+import static com.google.common.collect.ImmutableList.copyOf;
 import static com.google.common.collect.Lists.newArrayList;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertThat;
@@ -25,6 +26,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.function.Predicate;
 
+import com.google.common.collect.ImmutableList;
 import org.junit.Test;
 
 import solution.transactions.TransactionGenerator;
@@ -53,7 +55,7 @@ public class LambdaAnalyserTest {
         final Iterator<Transaction> suspicious = analyser.analyse(transactions, DUE_DAY);
 
         // then
-        assertThat(newArrayList(suspicious), hasSize(SUSPICIOUS_INDIVIDUALLY_COUNT));
+        assertThat(copyOf(suspicious), hasSize(SUSPICIOUS_INDIVIDUALLY_COUNT));
     }
 
     @Test
