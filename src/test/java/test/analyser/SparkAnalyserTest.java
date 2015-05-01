@@ -14,7 +14,6 @@ import java.io.Serializable;
 import java.util.Iterator;
 import java.util.List;
 
-import static org.apache.commons.lang.BooleanUtils.isFalse;
 import static org.apache.commons.lang.time.DateUtils.isSameDay;
 import static test.analyser.TestGeneratorSettings.*;
 
@@ -52,14 +51,9 @@ public class SparkAnalyserTest implements Serializable {
         };
 
         final List<Long> whitelisted = generator.chooseWhitelisted(WHITELISTED_COUNT);
-        final Function<Transaction, Boolean> allowAnalysis = new Function<Transaction, Boolean>() {
-            @Override
-            public Boolean call(final Transaction transaction) {
-                return isFalse(whitelisted.contains(transaction.getUserId())) && isSameDay(transaction.getDate(), DUE_DAY);
-            }
-        };
+        final Function<Transaction, Boolean> allowAnalysis = new SparkAnalyser.AllowAnalysisPredicate(whitelisted, DUE_DAY);
 
-        final FraudAnalyser analyser = new SparkAnalyser(CONTEXT, allowAnalysis, suspectIndividually, MAX_ALLOWED_FROM_ACCOUNT);
+        final FraudAnalyser analyser = new SparkAnalyser(CONTEXT, allowAnalysis, suspectIndividually, MAX_ALLOWED_FROM_ACCOUNT, MAX_ALLOWED_BY_USER_TO_ACCOUNT);
 
         // when
         final Iterator<Transaction> transactions = generator.generateIterator(NUMBER_OF_TRANSACTIONS);
@@ -68,4 +62,5 @@ public class SparkAnalyserTest implements Serializable {
         // then
         //assertThat(newArrayList(suspicious), hasSize(EXPECTED_NUMBER_OF_ALL_SUSPICIOUS));
     }
+
 }

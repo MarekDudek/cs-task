@@ -97,10 +97,10 @@ public class LambdaAnalyser extends FraudAnalyser {
 
     private List<Transaction> suspiciousBasedOnCountByUserToAccount(final List<Transaction> transactions)
     {
-        final Map<Long, Map<Long, List<Transaction>>> grouppedByUserAndToAccount = transactions.stream()
+        final Map<Long, Map<Long, List<Transaction>>> groupedByUserAndToAccount = transactions.stream()
                 .collect(Collectors.groupingBy(Transaction::getUserId, Collectors.groupingBy(Transaction::getAccountToId)));
 
-        final List<Transaction> suspicious = grouppedByUserAndToAccount.values().stream()
+        final List<Transaction> suspicious = groupedByUserAndToAccount.values().stream()
                 .flatMap(byToAccountMap -> byToAccountMap.values().stream())
                 .filter(list -> list.size() > maxAllowedByUserToAccount)
                 .flatMap(List::stream)
