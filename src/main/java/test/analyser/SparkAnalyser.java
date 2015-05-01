@@ -10,9 +10,11 @@ import scala.Tuple2;
 import test.transactions.Transaction;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.function.Predicate;
 
 import static com.google.common.collect.ImmutableList.copyOf;
 import static com.google.common.collect.Lists.newArrayList;
@@ -30,6 +32,7 @@ public final class SparkAnalyser extends FraudAnalyser implements Serializable {
 
     private final int maxAllowedFromAccount;
     private final int maxAllowedByUserToAccount;
+    private final List<Pair<Integer, BigDecimal>> thresholds;
 
     public SparkAnalyser
             (
@@ -37,7 +40,8 @@ public final class SparkAnalyser extends FraudAnalyser implements Serializable {
                     final Function<Transaction, Boolean> allowAnalysis,
                     final Function<Transaction, Boolean> suspectIndividually,
                     final int maxAllowedFromAccount,
-                    final int maxAllowedByUserToAccount
+                    final int maxAllowedByUserToAccount,
+                    final List<Pair<Integer, BigDecimal>> thresholds
             ) {
 
         this.context = context;
@@ -45,6 +49,7 @@ public final class SparkAnalyser extends FraudAnalyser implements Serializable {
         this.suspectIndividually = suspectIndividually;
         this.maxAllowedFromAccount = maxAllowedFromAccount;
         this.maxAllowedByUserToAccount = maxAllowedByUserToAccount;
+        this.thresholds = thresholds;
     }
 
     @Override
@@ -65,8 +70,10 @@ public final class SparkAnalyser extends FraudAnalyser implements Serializable {
         final JavaRDD<Transaction> countByUserToAccount = suspiciousCountByUserToAccount(toAnalyse);
         out.format("%d based on count by user to account%n", countByUserToAccount.count());
 
-        return null;
+        final JavaRDD<Transaction> countAndTotalAmountByUser = suspiciousBasedOnCountAndTotalAmountByUser(toAnalyse);
+        out.format("%d based on count and total amount by user%n", countAndTotalAmountByUser.count());
 
+        return null;
     }
 
     private JavaRDD<Transaction> suspiciousBasedOnCountFromAccount(final JavaRDD<Transaction> transactions) {
@@ -78,7 +85,7 @@ public final class SparkAnalyser extends FraudAnalyser implements Serializable {
 
         final JavaPairRDD<Long, Iterable<Transaction>> suspiciousAccounts = groupedByFromAccount.filter(exceedsAllowedCount);
 
-        return suspiciousAccounts.flatMap(TRANSACTIONS_FROM_ACCOUNT);
+        return suspiciousAccounts.flatMap(TRANSACTIONS_FROM_GROUP);
     }
 
     private JavaRDD<Transaction> suspiciousCountByUserToAccount(final JavaRDD<Transaction> transactions) {
@@ -93,17 +100,44 @@ public final class SparkAnalyser extends FraudAnalyser implements Serializable {
         return suspiciousUserToAccount.flatMap(TRANSACTIONS_BY_USER_TO_ACCOUNT);
     }
 
+    private JavaRDD<Transaction> suspiciousBasedOnCountAndTotalAmountByUser(final JavaRDD<Transaction> transactions) {
+
+        final JavaPairRDD<Long, Iterable<Transaction>> groupedByUser = transactions.groupBy(GROUPED_BY_USER);
+
+        final Function<Tuple2<Long, Iterable<Transaction>>, Boolean> exceedsCountAndTotal = new Function<Tuple2<Long, Iterable<Transaction>>, Boolean>() {
+            @Override
+            public Boolean call(final Tuple2<Long, Iterable<Transaction>> transactionsByUser) throws Exception {
+                final List<Transaction> transactions = copyOf(transactionsByUser._2());
+                return thresholds.stream().anyMatch(
+                        ((Predicate<Pair<Integer, BigDecimal>>)
+                                countAndTotalAmount -> transactions.stream()
+                                        .count() > countAndTotalAmount.getValue0()
+                        ).and((Predicate<Pair<Integer, BigDecimal>>)
+                                        countAndTotalAmount -> transactions.stream()
+                                                .map(Transaction::getAmount)
+                                                .reduce(BigDecimal.ZERO, BigDecimal::add).compareTo(countAndTotalAmount.getValue1()) > 0
+                        ));
+            }
+        };
+        final JavaPairRDD<Long, Iterable<Transaction>> suspiciousCountsAndTotal = groupedByUser.filter(exceedsCountAndTotal);
+
+        return suspiciousCountsAndTotal.flatMap(TRANSACTIONS_FROM_GROUP);
+    }
+
     private static final Function<Transaction, Long> GROUPED_BY_FROM_ACCOUNT =
             transaction -> transaction.getAccountFromId();
 
     private static final Function<Transaction, Pair<Long, Long>> GROUPED_BY_USER_TO_ACCOUNT =
             transaction -> Pair.with(transaction.getUserId(), transaction.getAccountToId());
 
-    private static final FlatMapFunction<Tuple2<Long, Iterable<Transaction>>, Transaction> TRANSACTIONS_FROM_ACCOUNT =
+    private static final FlatMapFunction<Tuple2<Long, Iterable<Transaction>>, Transaction> TRANSACTIONS_FROM_GROUP =
             transactionsFromAccount -> transactionsFromAccount._2();
 
     private static final FlatMapFunction<Tuple2<Pair<Long, Long>, Iterable<Transaction>>, Transaction> TRANSACTIONS_BY_USER_TO_ACCOUNT =
             suspiciousUserToAccount -> suspiciousUserToAccount._2();
+
+    private static final Function<Transaction, Long> GROUPED_BY_USER =
+            transaction -> transaction.getUserId();
 
     static class AllowAnalysisPredicate implements Function<Transaction, Boolean> {
 
