@@ -14,6 +14,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
+import static com.google.common.collect.ImmutableList.copyOf;
 import static com.google.common.collect.Lists.newArrayList;
 import static java.lang.System.out;
 import static org.apache.commons.lang.BooleanUtils.isFalse;
@@ -23,9 +24,10 @@ import static org.apache.commons.lang.time.DateUtils.isSameDay;
 public final class SparkAnalyser extends FraudAnalyser implements Serializable {
 
     private final transient JavaSparkContext context;
-    private final Function<Transaction, Boolean> allowAnalysis;
 
+    private final Function<Transaction, Boolean> allowAnalysis;
     private final Function<Transaction, Boolean> suspectIndividually;
+
     private final int maxAllowedFromAccount;
     private final int maxAllowedByUserToAccount;
 
@@ -71,28 +73,41 @@ public final class SparkAnalyser extends FraudAnalyser implements Serializable {
 
         final JavaPairRDD<Long, Iterable<Transaction>> groupedByFromAccount = transactions.groupBy(GROUPED_BY_FROM_ACCOUNT);
 
-        final Function<Tuple2<Long, Iterable<Transaction>>, Boolean> exceedsAllowedCount = new FromAccountCountExceededPredicate();
+        final Function<Tuple2<Long, Iterable<Transaction>>, Boolean> exceedsAllowedCount =
+                transactionsFromAccount -> copyOf(transactionsFromAccount._2()).size() > maxAllowedFromAccount;
+
         final JavaPairRDD<Long, Iterable<Transaction>> suspiciousAccounts = groupedByFromAccount.filter(exceedsAllowedCount);
 
-        final JavaRDD<Transaction> suspicious = suspiciousAccounts.flatMap(TRANSACTIONS_FROM_ACCOUNT);
-        return suspicious;
+        return suspiciousAccounts.flatMap(TRANSACTIONS_FROM_ACCOUNT);
     }
 
     private JavaRDD<Transaction> suspiciousCountByUserToAccount(final JavaRDD<Transaction> transactions) {
 
         final JavaPairRDD<Pair<Long, Long>, Iterable<Transaction>> byUserToAccount = transactions.groupBy(GROUPED_BY_USER_TO_ACCOUNT);
 
-        final Function<Tuple2<Pair<Long, Long>, Iterable<Transaction>>, Boolean> exceedsAllowedCount = new ByUserToAccountCountExceededPredicate();
+        final Function<Tuple2<Pair<Long, Long>, Iterable<Transaction>>, Boolean> exceedsAllowedCount =
+                transactionsByUserToAccount -> copyOf(transactionsByUserToAccount._2()).size() > maxAllowedByUserToAccount;
+
         final JavaPairRDD<Pair<Long, Long>, Iterable<Transaction>> suspiciousUserToAccount = byUserToAccount.filter(exceedsAllowedCount);
 
-        final JavaRDD<Transaction> suspicious = suspiciousUserToAccount.flatMap(TRANSACTIONS_BY_USER_TO_ACCOUNT);
-        return suspicious;
+        return suspiciousUserToAccount.flatMap(TRANSACTIONS_BY_USER_TO_ACCOUNT);
     }
+
+    private static final Function<Transaction, Long> GROUPED_BY_FROM_ACCOUNT =
+            transaction -> transaction.getAccountFromId();
+
+    private static final Function<Transaction, Pair<Long, Long>> GROUPED_BY_USER_TO_ACCOUNT =
+            transaction -> Pair.with(transaction.getUserId(), transaction.getAccountToId());
+
+    private static final FlatMapFunction<Tuple2<Long, Iterable<Transaction>>, Transaction> TRANSACTIONS_FROM_ACCOUNT =
+            transactionsFromAccount -> transactionsFromAccount._2();
+
+    private static final FlatMapFunction<Tuple2<Pair<Long, Long>, Iterable<Transaction>>, Transaction> TRANSACTIONS_BY_USER_TO_ACCOUNT =
+            suspiciousUserToAccount -> suspiciousUserToAccount._2();
 
     static class AllowAnalysisPredicate implements Function<Transaction, Boolean> {
 
         private final List<Long> whitelisted;
-
         private final Date dueDay;
 
         public AllowAnalysisPredicate(final List<Long> whitelisted, final Date dueDay) {
@@ -104,54 +119,5 @@ public final class SparkAnalyser extends FraudAnalyser implements Serializable {
         public Boolean call(final Transaction transaction) {
             return isFalse(whitelisted.contains(transaction.getUserId())) && isSameDay(transaction.getDate(), dueDay);
         }
-
     }
-
-    private static final Function<Transaction, Long> GROUPED_BY_FROM_ACCOUNT =
-            new Function<Transaction, Long>() {
-                @Override
-                public Long call(final Transaction transaction) {
-                    return transaction.getAccountFromId();
-                }
-            };
-
-    private static final Function<Transaction, Pair<Long, Long>> GROUPED_BY_USER_TO_ACCOUNT =
-            new Function<Transaction, Pair<Long, Long>>() {
-                @Override
-                public Pair<Long, Long> call(final Transaction transaction) throws Exception {
-                    return Pair.with(transaction.getUserId(), transaction.getAccountToId());
-                }
-            };
-
-    private class FromAccountCountExceededPredicate implements Function<Tuple2<Long, Iterable<Transaction>>, Boolean> {
-        @Override
-        public Boolean call(final Tuple2<Long, Iterable<Transaction>> transactionsFromAccount) {
-            final Iterable<Transaction> transactions = transactionsFromAccount._2();
-            return newArrayList(transactions).size() > maxAllowedFromAccount;
-        }
-    }
-
-    private static final FlatMapFunction<Tuple2<Long, Iterable<Transaction>>, Transaction> TRANSACTIONS_FROM_ACCOUNT =
-            new FlatMapFunction<Tuple2<Long, Iterable<Transaction>>, Transaction>() {
-                @Override
-                public Iterable<Transaction> call(final Tuple2<Long, Iterable<Transaction>> transactionsFromAccount) {
-                    return transactionsFromAccount._2();
-                }
-            };
-
-    private class ByUserToAccountCountExceededPredicate implements Function<Tuple2<Pair<Long, Long>, Iterable<Transaction>>, Boolean> {
-        @Override
-        public Boolean call(final Tuple2<Pair<Long, Long>, Iterable<Transaction>> byUserToAccount) throws Exception {
-            final Iterable<Transaction> transactions = byUserToAccount._2();
-            return newArrayList(transactions).size() > maxAllowedByUserToAccount;
-        }
-    }
-
-    private static final FlatMapFunction<Tuple2<Pair<Long, Long>, Iterable<Transaction>>, Transaction> TRANSACTIONS_BY_USER_TO_ACCOUNT =
-            new FlatMapFunction<Tuple2<Pair<Long, Long>, Iterable<Transaction>>, Transaction>() {
-                @Override
-                public Iterable<Transaction> call(final Tuple2<Pair<Long, Long>, Iterable<Transaction>> suspiciousUserToAccount) throws Exception {
-                    return suspiciousUserToAccount._2();
-                }
-            };
 }
