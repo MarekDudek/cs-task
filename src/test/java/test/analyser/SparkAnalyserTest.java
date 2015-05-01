@@ -5,6 +5,7 @@ import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.Function;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import solution.transactions.TransactionGenerator;
 import test.transactions.Transaction;
@@ -14,9 +15,12 @@ import java.io.Serializable;
 import java.util.Iterator;
 import java.util.List;
 
-import static org.apache.commons.lang.time.DateUtils.isSameDay;
+import static com.google.common.collect.ImmutableList.copyOf;
+import static org.hamcrest.Matchers.hasSize;
+import static org.junit.Assert.assertThat;
 import static test.analyser.TestGeneratorSettings.*;
 
+@Ignore
 public class SparkAnalyserTest implements Serializable {
 
     private static JavaSparkContext CONTEXT;
@@ -43,12 +47,7 @@ public class SparkAnalyserTest implements Serializable {
         final TransactionGenerator generator = new TransactionGenerator(CONFIG);
 
         final List<Long> blacklisted = generator.chooseBlacklisted(BLACKLISTED_COUNT);
-        final Function<Transaction, Boolean> suspectIndividually = new Function<Transaction, Boolean>() {
-            @Override
-            public Boolean call(final Transaction transaction) {
-                return blacklisted.contains(transaction.getUserId());
-            }
-        };
+        final Function<Transaction, Boolean> suspectIndividually = new SparkAnalyser.SuspectIndividually(blacklisted);
 
         final List<Long> whitelisted = generator.chooseWhitelisted(WHITELISTED_COUNT);
         final Function<Transaction, Boolean> allowAnalysis = new SparkAnalyser.AllowAnalysisPredicate(whitelisted, DUE_DAY);
@@ -60,7 +59,6 @@ public class SparkAnalyserTest implements Serializable {
         final Iterator<Transaction> suspicious = analyser.analyse(transactions, DUE_DAY);
 
         // then
-        //assertThat(newArrayList(suspicious), hasSize(EXPECTED_NUMBER_OF_ALL_SUSPICIOUS));
+        assertThat(copyOf(suspicious), hasSize(EXPECTED_NUMBER_OF_ALL_SUSPICIOUS));
     }
-
 }

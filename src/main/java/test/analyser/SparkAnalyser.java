@@ -18,7 +18,7 @@ import java.util.function.Predicate;
 
 import static com.google.common.collect.ImmutableList.copyOf;
 import static com.google.common.collect.Lists.newArrayList;
-import static java.lang.System.out;
+import static com.google.common.collect.Sets.newHashSet;
 import static org.apache.commons.lang.BooleanUtils.isFalse;
 import static org.apache.commons.lang.time.DateUtils.isSameDay;
 
@@ -56,24 +56,15 @@ public final class SparkAnalyser extends FraudAnalyser implements Serializable {
     public Iterator<Transaction> analyse(final Iterator<Transaction> transactions, final Date date) {
 
         final JavaRDD<Transaction> all = context.parallelize(newArrayList(transactions));
-        out.format("%d in input%n", all.count());
-
         final JavaRDD<Transaction> toAnalyse = all.filter(allowAnalysis);
-        out.format("%d allowed to analysis%n", toAnalyse.count());
 
         final JavaRDD<Transaction> individually = toAnalyse.filter(suspectIndividually);
-        out.format("%d suspected individually%n", individually.count());
-
         final JavaRDD<Transaction> countFromAccount = suspiciousBasedOnCountFromAccount(toAnalyse);
-        out.format("%d based on count from account%n", countFromAccount.count());
-
         final JavaRDD<Transaction> countByUserToAccount = suspiciousCountByUserToAccount(toAnalyse);
-        out.format("%d based on count by user to account%n", countByUserToAccount.count());
-
         final JavaRDD<Transaction> countAndTotalAmountByUser = suspiciousBasedOnCountAndTotalAmountByUser(toAnalyse);
-        out.format("%d based on count and total amount by user%n", countAndTotalAmountByUser.count());
 
-        return null;
+        final JavaRDD<Transaction> union = individually.union(countFromAccount).union(countByUserToAccount).union(countAndTotalAmountByUser);
+        return newHashSet(union.collect()).iterator();
     }
 
     private JavaRDD<Transaction> suspiciousBasedOnCountFromAccount(final JavaRDD<Transaction> transactions) {
@@ -139,7 +130,7 @@ public final class SparkAnalyser extends FraudAnalyser implements Serializable {
     private static final Function<Transaction, Long> GROUPED_BY_USER =
             transaction -> transaction.getUserId();
 
-    static class AllowAnalysisPredicate implements Function<Transaction, Boolean> {
+    public static class AllowAnalysisPredicate implements Function<Transaction, Boolean> {
 
         private final List<Long> whitelisted;
         private final Date dueDay;
@@ -152,6 +143,20 @@ public final class SparkAnalyser extends FraudAnalyser implements Serializable {
         @Override
         public Boolean call(final Transaction transaction) {
             return isFalse(whitelisted.contains(transaction.getUserId())) && isSameDay(transaction.getDate(), dueDay);
+        }
+    }
+
+    public static class SuspectIndividually implements Function<Transaction, Boolean> {
+
+        private final List<Long> blacklisted;
+
+        public SuspectIndividually(final List<Long> blacklisted) {
+            this.blacklisted = blacklisted;
+        }
+
+        @Override
+        public Boolean call(final Transaction transaction) {
+            return blacklisted.contains(transaction.getUserId());
         }
     }
 }
